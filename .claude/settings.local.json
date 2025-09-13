@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss init:*)",
+      "Bash(npx:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(pkill:*)",
+      "Read(//mnt/d/web-game/wavewar-master/**)",
+      "Bash(npm start)",
+      "Bash(node:*)",
+      "Read(//mnt/d/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
