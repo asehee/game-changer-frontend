@@ -4,15 +4,14 @@ import { Play, Square, Clock, DollarSign, AlertCircle, Maximize2, Volume2, Setti
 import { usePlaySession } from '../hooks/usePlaySession';
 import { useTranslation } from '../hooks/useTranslation';
 import { useWalletBalance } from '../contexts/WalletBalanceContext';
+import { useUser } from '../contexts/UserContext';
 import DeveloperApiService from '../services/developerApi';
 
 const GamePlay = () => {
   const { gameId } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  
-  // 사용자 지갑 주소 가져오기 (userId 대신 walletAddress 사용)
-  const walletAddress = localStorage.getItem('connectedWallet');
+  const { walletAddress, isConnected } = useUser();
   
   // 플레이 세션 관리
   const {
@@ -89,7 +88,7 @@ const GamePlay = () => {
   // 사용자 인증 및 계정 생성 확인
   useEffect(() => {
     const setupUser = async () => {
-      if (!userId) {
+      if (!walletAddress || !isConnected) {
         alert('로그인이 필요합니다.');
         navigate('/');
         return;
@@ -97,18 +96,18 @@ const GamePlay = () => {
 
       // 사용자 계정 확인/생성
       try {
-        await DeveloperApiService.findOrCreateUser(userId);
+        await DeveloperApiService.findOrCreateUser(walletAddress);
         console.log('User account verified/created successfully');
         
         // 전역 상태의 잔액 조회 함수 사용
-        await fetchBalance(userId);
+        await fetchBalance(walletAddress);
       } catch (error) {
         console.warn('Failed to verify/create user account:', error);
       }
     };
 
     setupUser();
-  }, [userId, navigate]);
+  }, [walletAddress, isConnected, navigate, fetchBalance]);
 
   // 캔버스 게임 로직을 별도 useEffect로 분리하고 항상 실행되도록 수정
   useEffect(() => {
