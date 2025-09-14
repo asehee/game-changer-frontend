@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Search, TrendingUp, Award, Sparkles, Filter, ChevronRight, Wallet } from 'lucide-react';
+import { Search, TrendingUp, Award, Sparkles, Filter, ChevronRight } from 'lucide-react';
 import GameCard from '../components/GameCard';
-import WalletModal from '../components/WalletModal';
 import { useTranslation } from '../hooks/useTranslation';
 import axios from 'axios';
 
@@ -14,7 +13,6 @@ const GameLobby = () => {
     new: []
   });
   const [loading, setLoading] = useState(false);
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -107,14 +105,6 @@ const GameLobby = () => {
           </p>
           
           <div className="flex flex-col items-center gap-6">
-            <button
-              onClick={() => setIsWalletModalOpen(true)}
-              className="flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-105"
-            >
-              <Wallet className="w-5 h-5" />
-              Connect Wallet
-            </button>
-            
             <div className="relative max-w-2xl mx-auto w-full">
               <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
@@ -205,12 +195,6 @@ const GameLobby = () => {
           </div>
         </section>
       </div>
-
-      <WalletModal 
-        isOpen={isWalletModalOpen}
-        onClose={() => setIsWalletModalOpen(false)}
-        onWalletConnected={() => {}} // GameLobby에서는 특별한 처리 불필요
-      />
     </div>
   );
 };

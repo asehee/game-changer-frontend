@@ -11,7 +11,8 @@
       "Read(//mnt/d/web-game/wavewar-master/**)",
       "Bash(npm start)",
       "Bash(node:*)",
-      "Read(//mnt/d/**)"
+      "Read(//mnt/d/**)",
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
     "ask": []
