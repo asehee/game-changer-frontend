@@ -25,6 +25,21 @@ export const useDeveloperDashboard = (walletAddress) => {
 
   useEffect(() => {
     fetchDashboard();
+    
+    // 세션 종료 이벤트 리스너 추가
+    const handleSessionEnded = (event) => {
+      console.log('Session ended, refreshing dashboard...', event.detail);
+      // 세션 종료 후 잠시 대기 후 대시보드 새로고침 (서버 처리 완료 대기)
+      setTimeout(() => {
+        fetchDashboard();
+      }, 1000);
+    };
+    
+    window.addEventListener('sessionEnded', handleSessionEnded);
+    
+    return () => {
+      window.removeEventListener('sessionEnded', handleSessionEnded);
+    };
   }, [fetchDashboard]);
 
   return {

@@ -1,42 +1,62 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Wallet, ChevronDown, Gamepad2, Library, Users, TrendingUp, Menu, X, Languages } from 'lucide-react';
+import { User, Wallet, ChevronDown, Gamepad2, Library, Users, TrendingUp, Menu, X, Languages, DollarSign, CreditCard } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useUser } from '../contexts/UserContext';
 import { useTranslation } from '../hooks/useTranslation';
+import { useWalletBalance } from '../contexts/WalletBalanceContext';
 import WalletModal from './WalletModal';
 
 const Header = () => {
-  const [walletAddress, setWalletAddress] = useState(null);
-  const [nickname, setNickname] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const navigate = useNavigate();
   const { toggleLanguage, language } = useLanguage();
+  const { user, walletAddress, isConnected, isLoggedIn, nickname, loading, connectWallet, disconnectWallet } = useUser();
   const { t } = useTranslation();
+  const { userBalance, hasWallet, loading: balanceLoading, fetchBalance, setupFirstCharge } = useWalletBalance();
+  const [isCharging, setIsCharging] = useState(false);
 
-  useEffect(() => {
-    if (walletAddress) {
-      const randomNicknames = ['SteamPunk', 'NightRider', 'CyberHunter', 'PixelMaster', 'GameChanger'];
-      setNickname(randomNicknames[Math.floor(Math.random() * randomNicknames.length)]);
-    }
-  }, [walletAddress]);
-
-  const connectWallet = () => {
+  // 지갑 연결 모달 열기
+  const openWalletModal = () => {
     setIsWalletModalOpen(true);
   };
 
-  const handleWalletConnected = (address) => {
-    setWalletAddress(address);
+  // 지갑 연결 성공 핸들러
+  const handleWalletConnected = async (address) => {
+    try {
+      await connectWallet(address);
+      // 지갑 연결 성공 시 잔액 조회
+      fetchBalance(address);
+    } catch (error) {
+      console.error('Failed to connect wallet:', error);
+      alert('지갑 연결에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
-  // localStorage에서 연결된 지갑 정보를 확인
+  // 연결된 지갑이 있고 UserContext 로딩이 완료된 후 잔액 조회 (MyPage에서는 제외)
   useEffect(() => {
-    const savedWallet = localStorage.getItem('connectedWallet');
-    if (savedWallet) {
-      setWalletAddress(savedWallet);
+    if (walletAddress && isConnected && !loading && window.location.pathname !== '/mypage') {
+      fetchBalance(walletAddress);
     }
-  }, []);
+  }, [walletAddress, isConnected, loading, fetchBalance]);
+
+  // 충전 핸들러
+  const handleCharge = async () => {
+    if (!walletAddress) return;
+    
+    setIsCharging(true);
+    try {
+      await setupFirstCharge(walletAddress);
+      alert('충전이 완료되었습니다!');
+    } catch (error) {
+      console.error('Failed to charge:', error);
+      alert(`충전 실패: ${error.message}`);
+    } finally {
+      setIsCharging(false);
+    }
+  };
 
   const formatAddress = (address) => {
     if (!address) return '';
@@ -44,7 +64,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white/70 backdrop-blur-xl shadow-lg shadow-black/5 border-b border-white/20 sticky top-0 z-50">
+    <header className="bg-white/95 backdrop-blur-xl shadow-lg shadow-black/5 border-b border-gray-200 sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-8">
@@ -60,21 +80,21 @@ const Header = () => {
             <nav className="hidden md:flex space-x-2">
               <Link 
                 to="/" 
-                className="px-4 py-2.5 rounded-xl hover:bg-white/60 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium"
+                className="px-4 py-2.5 rounded-xl hover:bg-gray-700/60 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-gray-300 hover:text-blue-400 font-medium"
               >
                 <Library className="w-4 h-4" />
                 {t('store')}
               </Link>
               <Link 
                 to="/mypage" 
-                className="px-4 py-2.5 rounded-xl hover:bg-white/60 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium"
+                className="px-4 py-2.5 rounded-xl hover:bg-gray-700/60 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-gray-300 hover:text-blue-400 font-medium"
               >
                 <User className="w-4 h-4" />
                 {t('library')}
               </Link>
               <Link 
                 to="/developer" 
-                className="px-4 py-2.5 rounded-xl hover:bg-white/60 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium"
+                className="px-4 py-2.5 rounded-xl hover:bg-gray-700/60 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-gray-300 hover:text-blue-400 font-medium"
               >
                 <TrendingUp className="w-4 h-4" />
                 {t('developer')}
@@ -83,20 +103,61 @@ const Header = () => {
           </div>
 
           <div className="flex items-center space-x-3">
+            
+            {/* 잔액 표시 및 충전 버튼 - 지갑 연결 상태일 때만 */}
+            {walletAddress && (
+              <div className="hidden md:flex items-center gap-2">
+                {hasWallet ? (
+                  <>
+                    <div className="bg-green-900/50 backdrop-blur-sm rounded-2xl px-4 py-2 flex items-center gap-2 border border-green-700/20">
+                      <DollarSign className="w-4 h-4 text-green-400" />
+                      <span className="text-sm font-medium text-green-300">
+                        ${(userBalance || 0).toFixed(4)}
+                      </span>
+                    </div>
+                    {/* 잔액이 0이면 충전 버튼도 함께 표시 */}
+                    {userBalance === 0 && (
+                      <button
+                        onClick={handleCharge}
+                        disabled={isCharging}
+                        className={`bg-orange-600/90 hover:bg-orange-700 backdrop-blur-sm text-white px-3 py-2 rounded-2xl font-medium transition-all duration-200 flex items-center gap-2 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-105 text-sm ${
+                          isCharging ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        <CreditCard className="w-4 h-4" />
+                        {isCharging ? '충전 중...' : '충전하기'}
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <button
+                    onClick={handleCharge}
+                    disabled={isCharging || balanceLoading}
+                    className={`bg-orange-600/90 hover:bg-orange-700 backdrop-blur-sm text-white px-3 py-2 rounded-2xl font-medium transition-all duration-200 flex items-center gap-2 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-105 text-sm ${
+                      isCharging || balanceLoading ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    <CreditCard className="w-4 h-4" />
+                    {isCharging ? '충전 중...' : balanceLoading ? '확인 중...' : '임시 지갑 생성'}
+                  </button>
+                )}
+              </div>
+            )}
+            
             <button
               onClick={toggleLanguage}
-              className="bg-white/80 backdrop-blur-sm hover:bg-white/90 border border-white/30 px-3 py-2 rounded-2xl transition-all duration-200 flex items-center gap-2 shadow-lg shadow-black/5 hover:shadow-xl hover:scale-105"
+              className="bg-gray-800/80 backdrop-blur-sm hover:bg-gray-700/90 border border-gray-600/30 px-3 py-2 rounded-2xl transition-all duration-200 flex items-center gap-2 shadow-lg shadow-black/5 hover:shadow-xl hover:scale-105"
               title={`Switch to ${language === 'ko' ? 'English' : '한국어'}`}
             >
-              <Languages className="w-4 h-4 text-gray-600" />
-              <span className="text-sm font-medium text-gray-700">
+              <Languages className="w-4 h-4 text-gray-300" />
+              <span className="text-sm font-medium text-gray-300">
                 {language === 'ko' ? 'EN' : '한'}
               </span>
             </button>
             
-            {!walletAddress ? (
+            {!isConnected ? (
               <button
-                onClick={connectWallet}
+                onClick={openWalletModal}
                 className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-2.5 rounded-2xl font-medium transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-105 flex items-center gap-2 backdrop-blur-sm"
               >
                 <Wallet className="w-4 h-4" />
@@ -139,11 +200,8 @@ const Header = () => {
                     <hr className="border-white/30 my-1" />
                     <button
                       onClick={() => {
-                        setWalletAddress(null);
-                        setNickname('');
+                        disconnectWallet();
                         setIsDropdownOpen(false);
-                        localStorage.removeItem('connectedWallet');
-                        localStorage.removeItem('userId');
                       }}
                       className="block w-full text-left px-4 py-3 hover:bg-red-50/50 transition-all duration-200 text-red-600 font-medium"
                     >

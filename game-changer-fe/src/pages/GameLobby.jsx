@@ -93,7 +93,7 @@ const GameLobby = () => {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white transition-colors duration-200">
       <div className="relative mb-16 rounded-3xl overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-16 shadow-2xl shadow-black/20">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-purple-600/10"></div>
         <div className="relative z-10 text-center">

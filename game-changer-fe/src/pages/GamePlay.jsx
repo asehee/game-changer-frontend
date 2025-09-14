@@ -1,14 +1,33 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Play, Square, Clock, DollarSign, AlertCircle, Maximize2, Volume2, Settings } from 'lucide-react';
+import { usePlaySession } from '../hooks/usePlaySession';
+import { useTranslation } from '../hooks/useTranslation';
+import { useWalletBalance } from '../contexts/WalletBalanceContext';
+import DeveloperApiService from '../services/developerApi';
 
 const GamePlay = () => {
   const { gameId } = useParams();
   const navigate = useNavigate();
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [playTime, setPlayTime] = useState(0);
-  const [totalCost, setTotalCost] = useState(0);
+  const { t } = useTranslation();
+  
+  // 사용자 지갑 주소 가져오기 (userId 대신 walletAddress 사용)
+  const walletAddress = localStorage.getItem('connectedWallet');
+  
+  // 플레이 세션 관리
+  const {
+    session,
+    isPlaying,
+    loading: sessionLoading,
+    error: sessionError,
+    playTime,
+    cost: totalCost,
+    startPlay,
+    stopPlay
+  } = usePlaySession(gameId, walletAddress);
+
   const [gameData, setGameData] = useState(null);
+  const { userBalance, hasWallet, loading: balanceLoading, fetchBalance } = useWalletBalance();
 
   useEffect(() => {
     const gameDatabase = {
@@ -67,16 +86,29 @@ const GamePlay = () => {
     setGameData(gameDatabase[gameId] || gameDatabase['default']);
   }, [gameId]);
 
+  // 사용자 인증 및 계정 생성 확인
   useEffect(() => {
-    let interval;
-    if (isPlaying) {
-      interval = setInterval(() => {
-        setPlayTime(prev => prev + 1);
-        setTotalCost(prev => prev + (gameData?.price || 0));
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isPlaying, gameData]);
+    const setupUser = async () => {
+      if (!userId) {
+        alert('로그인이 필요합니다.');
+        navigate('/');
+        return;
+      }
+
+      // 사용자 계정 확인/생성
+      try {
+        await DeveloperApiService.findOrCreateUser(userId);
+        console.log('User account verified/created successfully');
+        
+        // 전역 상태의 잔액 조회 함수 사용
+        await fetchBalance(userId);
+      } catch (error) {
+        console.warn('Failed to verify/create user account:', error);
+      }
+    };
+
+    setupUser();
+  }, [userId, navigate]);
 
   // 캔버스 게임 로직을 별도 useEffect로 분리하고 항상 실행되도록 수정
   useEffect(() => {
@@ -133,26 +165,59 @@ const GamePlay = () => {
   }, [isPlaying, gameData]);
 
   const handleStartGame = useCallback(async () => {
+    // 지갑이 설정되지 않았으면 게임 시작 불가
+    if (!hasWallet) {
+      alert('먼저 상단 메뉴에서 임시 지갑을 생성해주세요.');
+      return;
+    }
+    
+    // 잔액이 0이면 충전 필요
+    if (userBalance === 0) {
+      alert('잔액이 부족합니다. 상단 메뉴에서 충전해주세요.');
+      return;
+    }
+
     try {
       console.log('Starting game session...');
-      setIsPlaying(true);
-      setPlayTime(0);
-      setTotalCost(0);
+      await startPlay();
     } catch (error) {
       console.error('Failed to start game:', error);
+      alert(`게임 시작 실패: ${error.message}`);
     }
-  }, []);
+  }, [startPlay, hasWallet]);
 
   const handleEndGame = useCallback(async () => {
     try {
       console.log('Ending game session...');
+      const result = await stopPlay();
       console.log(`Total play time: ${formatTime(playTime)}`);
-      console.log(`Total cost: $${totalCost.toFixed(4)}`);
-      setIsPlaying(false);
+      console.log(`Total cost: $${totalCost.toFixed(6)}`);
+      
+      if (result) {
+        alert(`게임이 종료되었습니다!\n플레이 시간: ${formatTime(playTime)}\n총 비용: $${totalCost.toFixed(6)}`);
+        
+        // 세션 종료 후 잔액 다시 조회
+        await fetchBalance(userId);
+        
+        // 세션 종료 후 개발자 대시보드 데이터 갱신을 위한 이벤트 발생
+        window.dispatchEvent(new CustomEvent('sessionEnded', {
+          detail: { sessionData: result, playTime, totalCost }
+        }));
+      }
     } catch (error) {
       console.error('Failed to end game:', error);
+      alert('게임 종료에 실패했습니다. 다시 시도해주세요.');
+      
+      // 에러가 발생해도 세션 상태를 정리하고 대시보드 갱신 시도
+      try {
+        window.dispatchEvent(new CustomEvent('sessionEnded', {
+          detail: { error: error.message }
+        }));
+      } catch (eventError) {
+        console.error('Failed to dispatch sessionEnded event:', eventError);
+      }
     }
-  }, [playTime, totalCost]);
+  }, [stopPlay, playTime, totalCost]);
 
   const formatTime = useCallback((seconds) => {
     const hours = Math.floor(seconds / 3600);
@@ -162,6 +227,24 @@ const GamePlay = () => {
   }, []);
 
   const renderGameContent = useCallback(() => {
+    if (sessionError) {
+      return (
+        <div className="text-center">
+          <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-red-500 to-pink-600 rounded-3xl flex items-center justify-center shadow-lg">
+            <AlertCircle className="w-16 h-16 text-white" />
+          </div>
+          <p className="text-red-600 text-lg mb-2">세션 오류가 발생했습니다</p>
+          <p className="text-gray-400 mb-4">{sessionError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-2xl"
+          >
+            새로고침
+          </button>
+        </div>
+      );
+    }
+
     if (!isPlaying) {
       return (
         <div className="text-center">
@@ -170,6 +253,9 @@ const GamePlay = () => {
           </div>
           <p className="text-gray-600 text-lg mb-2">Ready to play {gameData?.title}?</p>
           <p className="text-gray-400">Click "Start Game" to begin your adventure</p>
+          {sessionLoading && (
+            <p className="text-blue-600 mt-4">게임 세션을 준비중입니다...</p>
+          )}
         </div>
       );
     }
@@ -240,6 +326,40 @@ const GamePlay = () => {
             </div>
           </div>
 
+          {/* 잔액 표시 또는 충전 안내 */}
+          {hasWallet ? (
+            <div className="bg-green-50/50 backdrop-blur-sm rounded-2xl p-4 mb-6 border border-green-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-600 rounded-2xl flex items-center justify-center">
+                    <DollarSign className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-sm text-green-700">잔액</div>
+                    <div className="text-xl font-bold text-green-800">${(userBalance || 0).toFixed(6)}</div>
+                  </div>
+                </div>
+                {userBalance === 0 && (
+                  <div className="text-sm text-orange-600 font-medium">
+                    상단 메뉴에서 충전하세요
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="bg-orange-50/50 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-orange-100">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-orange-500 rounded-2xl flex items-center justify-center">
+                  <AlertCircle className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-orange-800 mb-1">임시 지갑 생성이 필요합니다</h3>
+                  <p className="text-orange-700 text-sm">게임을 플레이하려면 상단 메뉴에서 임시 지갑을 생성해주세요.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {isPlaying && (
             <div className="bg-blue-50/50 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-blue-100">
               <div className="grid grid-cols-2 gap-6">
@@ -269,18 +389,24 @@ const GamePlay = () => {
             {!isPlaying ? (
               <button
                 onClick={handleStartGame}
-                className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-200 flex items-center justify-center gap-3 shadow-lg shadow-green-500/25 hover:shadow-green-500/40 hover:scale-105"
+                disabled={sessionLoading}
+                className={`flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-200 flex items-center justify-center gap-3 shadow-lg shadow-green-500/25 hover:shadow-green-500/40 hover:scale-105 ${
+                  sessionLoading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
                 <Play className="w-6 h-6" />
-                Start Game
+                {sessionLoading ? '세션 시작 중...' : 'Start Game'}
               </button>
             ) : (
               <button
                 onClick={handleEndGame}
-                className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-200 flex items-center justify-center gap-3 shadow-lg shadow-red-500/25 hover:shadow-red-500/40 hover:scale-105"
+                disabled={sessionLoading}
+                className={`flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-200 flex items-center justify-center gap-3 shadow-lg shadow-red-500/25 hover:shadow-red-500/40 hover:scale-105 ${
+                  sessionLoading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
                 <Square className="w-6 h-6" />
-                End Game
+                {sessionLoading ? '세션 종료 중...' : 'End Game'}
               </button>
             )}
           </div>

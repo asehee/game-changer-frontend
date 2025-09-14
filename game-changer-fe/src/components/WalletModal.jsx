@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import { X, Wallet, User, CheckCircle } from 'lucide-react';
+import { useUser } from '../contexts/UserContext';
 import { useTranslation } from '../hooks/useTranslation';
 
 const WalletModal = ({ isOpen, onClose, onWalletConnected }) => {
   const [walletAddress, setWalletAddress] = useState('');
   const [currentStep, setCurrentStep] = useState('input'); // 'input', 'success', 'existing'
-  const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const navigate = useNavigate();
+  const { user, connectWallet } = useUser();
   const { t } = useTranslation();
 
   const handleWalletSubmit = async (e) => {
@@ -18,37 +21,12 @@ const WalletModal = ({ isOpen, onClose, onWalletConnected }) => {
     setLoading(true);
     
     try {
-      // find-or-create 엔드포인트를 사용하여 안전하게 처리
-      const response = await fetch('http://localhost:3000/api/users/find-or-create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ walletAddress }),
-      });
-
-      if (response.ok) {
-        const user = await response.json();
-        setUserData(user);
-        
-        // 기존 사용자인지 새 사용자인지 확인
-        const checkResponse = await fetch(`http://localhost:3000/api/users/wallet/${walletAddress}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (checkResponse.ok) {
-          const existingUser = await checkResponse.json();
-          const isNewUser = new Date(existingUser.createdAt) > new Date(Date.now() - 5000); // 5초 이내 생성
-          setCurrentStep(isNewUser ? 'success' : 'existing');
-        } else {
-          setCurrentStep('success');
-        }
-      } else {
-        throw new Error('Failed to process wallet');
-      }
+      const userData = await connectWallet(walletAddress.trim());
+      
+      // 기존 사용자인지 새 사용자인지 확인
+      const isNewUser = new Date(userData.createdAt) > new Date(Date.now() - 5000); // 5초 이내 생성
+      setCurrentStep(isNewUser ? 'success' : 'existing');
+      
     } catch (error) {
       console.error('Wallet connection error:', error);
       alert('지갑 연결에 실패했습니다. 다시 시도해주세요.');
@@ -62,7 +40,6 @@ const WalletModal = ({ isOpen, onClose, onWalletConnected }) => {
     setTimeout(() => {
       setWalletAddress('');
       setCurrentStep('input');
-      setUserData(null);
       setIsClosing(false);
       onClose();
     }, 200); // 애니메이션 시간과 맞춤
@@ -77,15 +54,13 @@ const WalletModal = ({ isOpen, onClose, onWalletConnected }) => {
   };
 
   const navigateToMyPage = () => {
-    localStorage.setItem('connectedWallet', walletAddress);
-    localStorage.setItem('userId', userData.id);
     // 지갑 연결 성공 시 부모 컴포넌트에 알림
     if (onWalletConnected) {
       onWalletConnected(walletAddress);
     }
     handleClose();
-    // 마이페이지로 이동 (라우터 설정 필요)
-    window.location.href = '/mypage';
+    // React Router를 사용하여 마이페이지로 이동
+    navigate('/mypage');
   };
 
   if (!isOpen) return null;
@@ -168,7 +143,7 @@ const WalletModal = ({ isOpen, onClose, onWalletConnected }) => {
                 <User className="w-5 h-5 text-blue-600" />
                 <span className="text-sm font-semibold text-gray-700">{t('userId')}</span>
               </div>
-              <p className="text-lg font-mono text-gray-900 bg-white px-3 py-2 rounded-lg shadow-sm border border-gray-100">{userData?.id}</p>
+              <p className="text-lg font-mono text-gray-900 bg-white px-3 py-2 rounded-lg shadow-sm border border-gray-100">{user?.id}</p>
             </div>
 
             <button
@@ -194,7 +169,7 @@ const WalletModal = ({ isOpen, onClose, onWalletConnected }) => {
                 <User className="w-5 h-5 text-indigo-600" />
                 <span className="text-sm font-semibold text-gray-700">{t('userId')}</span>
               </div>
-              <p className="text-lg font-mono text-gray-900 bg-white px-3 py-2 rounded-lg shadow-sm border border-gray-100">{userData?.id}</p>
+              <p className="text-lg font-mono text-gray-900 bg-white px-3 py-2 rounded-lg shadow-sm border border-gray-100">{user?.id}</p>
             </div>
 
             <div className="space-y-3">

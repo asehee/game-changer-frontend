@@ -1,54 +1,23 @@
 import { useState, useEffect } from 'react';
 import { User, Wallet, Clock, Play, XCircle, Calendar, TrendingUp, Award, ArrowLeft, Copy, Check } from 'lucide-react';
+import { useUser } from '../contexts/UserContext';
 import { useTranslation } from '../hooks/useTranslation';
 
 const MyPage = () => {
-  const [userProfile, setUserProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const { user, walletAddress, isLoggedIn, nickname, loading, disconnectWallet } = useUser();
   const { t } = useTranslation();
 
+  // 로그인하지 않은 경우 홈페이지로 리디렉션
   useEffect(() => {
-    const loadUserData = async () => {
-      try {
-        const walletAddress = localStorage.getItem('connectedWallet');
-        const userId = localStorage.getItem('userId');
-        
-        if (!walletAddress || !userId) {
-          window.location.href = '/';
-          return;
-        }
-
-        const response = await fetch(`http://localhost:3000/api/users/${userId}`);
-        if (response.ok) {
-          const user = await response.json();
-          const mockProfile = {
-            nickname: user.nickname || 'GameChanger User',
-            walletAddress: user.wallet, // 백엔드에서는 wallet 필드 사용
-            totalPlayTime: '0 hours',
-            gamesPlayed: 0,
-            joinDate: new Date(user.createdAt).toLocaleDateString('ko-KR'),
-            userId: user.id
-          };
-          setUserProfile(mockProfile);
-        } else {
-          throw new Error('Failed to fetch user data');
-        }
-      } catch (error) {
-        console.error('Error loading user data:', error);
-        alert(t('error'));
-        window.location.href = '/';
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadUserData();
-  }, []);
+    if (!loading && !isLoggedIn) {
+      window.location.href = '/';
+    }
+  }, [loading, isLoggedIn]);
 
   const handleCopyAddress = async () => {
     try {
-      await navigator.clipboard.writeText(userProfile.walletAddress);
+      await navigator.clipboard.writeText(walletAddress);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
@@ -57,12 +26,11 @@ const MyPage = () => {
   };
 
   const handleDisconnect = () => {
-    localStorage.removeItem('connectedWallet');
-    localStorage.removeItem('userId');
+    disconnectWallet();
     window.location.href = '/';
   };
 
-  if (loading || !userProfile) {
+  if (loading || !isLoggedIn) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -107,7 +75,7 @@ const MyPage = () => {
                   <p className="text-xl text-gray-300 mb-4 leading-relaxed">{t('gameExploreAndNFT')}</p>
                   <div className="flex items-center gap-2 text-blue-100 mb-2">
                     <Wallet className="w-5 h-5" />
-                    <span className="font-mono text-lg">{userProfile.walletAddress.slice(0, 20)}...</span>
+                    <span className="font-mono text-lg">{walletAddress.slice(0, 20)}...</span>
                     <button
                       onClick={handleCopyAddress}
                       className="text-blue-100 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
@@ -118,11 +86,11 @@ const MyPage = () => {
                   <div className="flex items-center gap-6 text-sm text-blue-200">
                     <span className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
-                      {t('joinDate')}: {userProfile.joinDate}
+                      {t('joinDate')}: {new Date(user.createdAt).toLocaleDateString('ko-KR')}
                     </span>
                     <span className="flex items-center gap-2">
                       <User className="w-4 h-4" />
-                      {t('userId')}: {userProfile.userId}
+                      {t('userId')}: {user.id}
                     </span>
                   </div>
                 </div>
@@ -130,11 +98,11 @@ const MyPage = () => {
               
               <div className="grid grid-cols-2 gap-8">
                 <div className="text-center bg-white/10 rounded-2xl p-6 backdrop-blur-sm">
-                  <div className="text-4xl font-bold text-white mb-2">{userProfile.totalPlayTime}</div>
+                  <div className="text-4xl font-bold text-white mb-2">0 hours</div>
                   <div className="text-sm text-blue-100">{t('totalPlayTime')}</div>
                 </div>
                 <div className="text-center bg-white/10 rounded-2xl p-6 backdrop-blur-sm">
-                  <div className="text-4xl font-bold text-white mb-2">{userProfile.gamesPlayed}</div>
+                  <div className="text-4xl font-bold text-white mb-2">0</div>
                   <div className="text-sm text-blue-100">{t('playedGames')}</div>
                 </div>
               </div>
@@ -154,11 +122,11 @@ const MyPage = () => {
             <div className="space-y-4">
               <div>
                 <span className="text-sm font-medium text-gray-600">{t('userId')}</span>
-                <p className="font-mono text-lg text-gray-900 mt-1">{userProfile.userId}</p>
+                <p className="font-mono text-lg text-gray-900 mt-1">{user?.id}</p>
               </div>
               <div>
                 <span className="text-sm font-medium text-gray-600">{t('joinDate')}</span>
-                <p className="text-gray-900 mt-1">{userProfile.joinDate}</p>
+                <p className="text-gray-900 mt-1">{new Date(user?.createdAt).toLocaleDateString('ko-KR')}</p>
               </div>
             </div>
           </div>
@@ -175,7 +143,7 @@ const MyPage = () => {
                 <span className="text-sm font-medium text-gray-600">{t('walletAddress')}</span>
                 <div className="flex items-center gap-2 mt-1">
                   <p className="font-mono text-sm text-gray-900 truncate">
-                    {userProfile.walletAddress}
+                    {walletAddress}
                   </p>
                   <button
                     onClick={handleCopyAddress}
@@ -198,7 +166,7 @@ const MyPage = () => {
             <div className="space-y-4">
               <div>
                 <span className="text-sm font-medium text-gray-600">{t('playedGames')}</span>
-                <p className="text-3xl font-bold text-gray-900 mt-1">{userProfile.gamesPlayed}</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">0</p>
               </div>
               <div>
                 <span className="text-sm font-medium text-gray-600">{t('earnedNFTs')}</span>
