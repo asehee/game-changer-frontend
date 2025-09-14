@@ -80,24 +80,30 @@ const Header = () => {
             <nav className="hidden md:flex space-x-2">
               <Link 
                 to="/" 
-                className="px-4 py-2.5 rounded-xl hover:bg-gray-700/60 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-gray-300 hover:text-blue-400 font-medium"
+                className="px-4 py-2.5 rounded-xl hover:bg-gray-100 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium"
               >
                 <Library className="w-4 h-4" />
                 {t('store')}
               </Link>
               <Link 
                 to="/mypage" 
-                className="px-4 py-2.5 rounded-xl hover:bg-gray-700/60 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-gray-300 hover:text-blue-400 font-medium"
+                className="px-4 py-2.5 rounded-xl hover:bg-gray-100 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium"
               >
                 <User className="w-4 h-4" />
                 {t('library')}
               </Link>
               <Link 
                 to="/developer" 
-                className="px-4 py-2.5 rounded-xl hover:bg-gray-700/60 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-gray-300 hover:text-blue-400 font-medium"
+                className="px-4 py-2.5 rounded-xl hover:bg-gray-100 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium"
               >
                 <TrendingUp className="w-4 h-4" />
                 {t('developer')}
+              </Link>
+              <Link 
+                to="/test" 
+                className="px-4 py-2.5 rounded-xl hover:bg-gray-100 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium"
+              >
+                Token Faucet
               </Link>
             </nav>
           </div>
