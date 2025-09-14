@@ -1,209 +1,282 @@
 import { useState, useEffect } from 'react';
-import { User, Wallet, Clock, Play, XCircle, Calendar, TrendingUp, Award } from 'lucide-react';
+import { User, Wallet, Clock, Play, XCircle, Calendar, TrendingUp, Award, ArrowLeft, Copy, Check } from 'lucide-react';
+import { useTranslation } from '../hooks/useTranslation';
 
 const MyPage = () => {
   const [userProfile, setUserProfile] = useState(null);
-  const [activeGames, setActiveGames] = useState([]);
-  const [gameHistory, setGameHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
-    const mockProfile = {
-      nickname: 'CyberHunter',
-      walletAddress: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEA1',
-      totalPlayTime: '1,234 hours',
-      gamesPlayed: 45,
-      joinDate: '2024-01-15'
+    const loadUserData = async () => {
+      try {
+        const walletAddress = localStorage.getItem('connectedWallet');
+        const userId = localStorage.getItem('userId');
+        
+        if (!walletAddress || !userId) {
+          window.location.href = '/';
+          return;
+        }
+
+        const response = await fetch(`http://localhost:3000/api/users/${userId}`);
+        if (response.ok) {
+          const user = await response.json();
+          const mockProfile = {
+            nickname: user.nickname || 'GameChanger User',
+            walletAddress: user.wallet, // 백엔드에서는 wallet 필드 사용
+            totalPlayTime: '0 hours',
+            gamesPlayed: 0,
+            joinDate: new Date(user.createdAt).toLocaleDateString('ko-KR'),
+            userId: user.id
+          };
+          setUserProfile(mockProfile);
+        } else {
+          throw new Error('Failed to fetch user data');
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        alert(t('error'));
+        window.location.href = '/';
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const mockActiveGames = [
-      { id: 1, title: 'Cyber Warriors', startTime: '2 hours ago', currentCost: '$2.45' },
-      { id: 2, title: 'Space Odyssey', startTime: '15 minutes ago', currentCost: '$0.32' },
-    ];
-
-    const mockHistory = [
-      { id: 1, title: 'Fantasy Quest', totalTime: '124h 30m', lastPlayed: '2 days ago', totalSpent: '$45.20' },
-      { id: 2, title: 'Racing Thunder', totalTime: '89h 15m', lastPlayed: '1 week ago', totalSpent: '$28.50' },
-      { id: 3, title: 'Battle Arena', totalTime: '234h 45m', lastPlayed: '2 weeks ago', totalSpent: '$0.00' },
-      { id: 4, title: 'Puzzle Master', totalTime: '45h 20m', lastPlayed: '1 month ago', totalSpent: '$12.30' },
-      { id: 5, title: 'Zombie Survival', totalTime: '167h 10m', lastPlayed: '1 month ago', totalSpent: '$67.80' },
-    ];
-
-    setUserProfile(mockProfile);
-    setActiveGames(mockActiveGames);
-    setGameHistory(mockHistory);
+    loadUserData();
   }, []);
 
-  const handleForceEnd = (gameId) => {
-    console.log(`Force ending game ${gameId}`);
-    setActiveGames(activeGames.filter(game => game.id !== gameId));
+  const handleCopyAddress = async () => {
+    try {
+      await navigator.clipboard.writeText(userProfile.walletAddress);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy address:', error);
+    }
   };
 
-  if (!userProfile) {
+  const handleDisconnect = () => {
+    localStorage.removeItem('connectedWallet');
+    localStorage.removeItem('userId');
+    window.location.href = '/';
+  };
+
+  if (loading || !userProfile) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">{t('loading')}</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen">
-      <div className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-2xl p-8 mb-8">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-6">
-            <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-              <User className="w-12 h-12 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-white mb-2">{userProfile.nickname}</h1>
-              <div className="flex items-center gap-2 text-gray-300 mb-1">
-                <Wallet className="w-4 h-4" />
-                <span className="font-mono text-sm">{userProfile.walletAddress}</span>
-              </div>
-              <div className="flex items-center gap-4 text-sm text-gray-400">
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
-                  Joined {userProfile.joinDate}
-                </span>
-              </div>
-            </div>
-          </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <button
+            onClick={() => window.location.href = '/'}
+            className="flex items-center gap-2 text-gray-600 hover:text-blue-600 hover:scale-105 transition-all duration-200 font-medium"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            {t('backToHome')}
+          </button>
           
-          <div className="grid grid-cols-2 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white">{userProfile.totalPlayTime}</div>
-              <div className="text-sm text-gray-400">Total Play Time</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white">{userProfile.gamesPlayed}</div>
-              <div className="text-sm text-gray-400">Games Played</div>
+          <button
+            onClick={handleDisconnect}
+            className="bg-red-100 hover:bg-red-200 text-red-700 px-6 py-2 rounded-2xl transition-all duration-200 font-medium hover:scale-105 shadow-lg shadow-red-500/10"
+          >
+            {t('disconnectWallet')}
+          </button>
+        </div>
+
+        {/* Hero Section */}
+        <div className="relative mb-16 rounded-3xl overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-16 shadow-2xl shadow-black/20">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-purple-600/10"></div>
+          <div className="relative z-10">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-8">
+                <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+                  <User className="w-12 h-12 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-5xl font-bold text-white mb-4 tracking-tight">{t('myPage')}</h1>
+                  <p className="text-xl text-gray-300 mb-4 leading-relaxed">{t('gameExploreAndNFT')}</p>
+                  <div className="flex items-center gap-2 text-blue-100 mb-2">
+                    <Wallet className="w-5 h-5" />
+                    <span className="font-mono text-lg">{userProfile.walletAddress.slice(0, 20)}...</span>
+                    <button
+                      onClick={handleCopyAddress}
+                      className="text-blue-100 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
+                    >
+                      {copied ? <Check className="w-5 h-5 text-green-300" /> : <Copy className="w-5 h-5" />}
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-6 text-sm text-blue-200">
+                    <span className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      {t('joinDate')}: {userProfile.joinDate}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      {t('userId')}: {userProfile.userId}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-8">
+                <div className="text-center bg-white/10 rounded-2xl p-6 backdrop-blur-sm">
+                  <div className="text-4xl font-bold text-white mb-2">{userProfile.totalPlayTime}</div>
+                  <div className="text-sm text-blue-100">{t('totalPlayTime')}</div>
+                </div>
+                <div className="text-center bg-white/10 rounded-2xl p-6 backdrop-blur-sm">
+                  <div className="text-4xl font-bold text-white mb-2">{userProfile.gamesPlayed}</div>
+                  <div className="text-sm text-blue-100">{t('playedGames')}</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {activeGames.length > 0 && (
-        <section className="mb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <Play className="w-6 h-6 text-green-500" />
-            <h2 className="text-2xl font-bold text-white">Currently Playing</h2>
-          </div>
-          <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 mb-4">
-            <div className="flex items-center gap-2 text-red-400">
-              <XCircle className="w-5 h-5" />
-              <p className="text-sm">You have active game sessions. End them to stop billing.</p>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl shadow-black/5 border border-white/20 hover:scale-105 transition-transform duration-200">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
+                <User className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">{t('userInfo')}</h3>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <span className="text-sm font-medium text-gray-600">{t('userId')}</span>
+                <p className="font-mono text-lg text-gray-900 mt-1">{userProfile.userId}</p>
+              </div>
+              <div>
+                <span className="text-sm font-medium text-gray-600">{t('joinDate')}</span>
+                <p className="text-gray-900 mt-1">{userProfile.joinDate}</p>
+              </div>
             </div>
           </div>
-          <div className="space-y-4">
-            {activeGames.map(game => (
-              <div key={game.id} className="bg-gray-800 rounded-lg p-4 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
-                    <Play className="w-6 h-6 text-green-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-medium text-white">{game.title}</h3>
-                    <div className="flex items-center gap-4 text-sm text-gray-400">
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        Started {game.startTime}
-                      </span>
-                      <span className="text-green-400 font-medium">{game.currentCost}</span>
-                    </div>
-                  </div>
+
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl shadow-black/5 border border-white/20 hover:scale-105 transition-transform duration-200">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center">
+                <Wallet className="w-6 h-6 text-green-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">{t('walletInfo')}</h3>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <span className="text-sm font-medium text-gray-600">{t('walletAddress')}</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="font-mono text-sm text-gray-900 truncate">
+                    {userProfile.walletAddress}
+                  </p>
+                  <button
+                    onClick={handleCopyAddress}
+                    className="text-gray-500 hover:text-gray-700 transition-colors p-1 rounded hover:bg-gray-100"
+                  >
+                    {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                  </button>
                 </div>
-                <button
-                  onClick={() => handleForceEnd(game.id)}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition flex items-center gap-2"
-                >
-                  <XCircle className="w-4 h-4" />
-                  Force End
-                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl shadow-black/5 border border-white/20 hover:scale-105 transition-transform duration-200">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center">
+                <Award className="w-6 h-6 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">{t('gameStats')}</h3>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <span className="text-sm font-medium text-gray-600">{t('playedGames')}</span>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{userProfile.gamesPlayed}</p>
+              </div>
+              <div>
+                <span className="text-sm font-medium text-gray-600">{t('earnedNFTs')}</span>
+                <p className="text-3xl font-bold text-gray-900 mt-1">0</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Game and NFT Sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+          <section className="h-full">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+                <Play className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 tracking-tight">{t('recentGames')}</h2>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 text-center shadow-xl shadow-black/5 border border-white/20 h-64 flex flex-col justify-center">
+              <p className="text-gray-600 mb-6 text-lg">{t('noGamesPlayed')}</p>
+              <button
+                onClick={() => window.location.href = '/'}
+                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-2xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                {t('exploreGames')}
+              </button>
+            </div>
+          </section>
+
+          <section className="h-full">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl flex items-center justify-center shadow-lg shadow-purple-500/25">
+                <Award className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 tracking-tight">{t('ownedNFTs')}</h2>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 text-center shadow-xl shadow-black/5 border border-white/20 h-64 flex flex-col justify-center">
+              <p className="text-gray-600 mb-2 text-lg">{t('noNFTs')}</p>
+              <p className="text-sm text-gray-500">
+                {t('playGamesEarnNFTs')}
+              </p>
+            </div>
+          </section>
+        </div>
+
+        {/* Achievements Section */}
+        <section>
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-3xl flex items-center justify-center shadow-lg shadow-yellow-500/25">
+              <Award className="w-6 h-6 text-white" />
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">{t('achievements')}</h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { nameKey: 'firstSteps', descKey: 'firstGamePlay', unlocked: false },
+              { nameKey: 'timeWarrior', descKey: 'play100Hours', unlocked: false },
+              { nameKey: 'explorer', descKey: 'play10Games', unlocked: false },
+              { nameKey: 'dedicated', descKey: 'play1000Hours', unlocked: false },
+            ].map((achievement, index) => (
+              <div 
+                key={index} 
+                className={`bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl shadow-black/5 border-2 transition-transform duration-200 hover:scale-105 ${
+                  achievement.unlocked ? 'border-yellow-400 bg-gradient-to-br from-yellow-50 to-orange-50' : 'border-gray-200 opacity-70'
+                }`}
+              >
+                <div className={`w-16 h-16 rounded-3xl flex items-center justify-center mb-4 mx-auto ${
+                  achievement.unlocked ? 'bg-gradient-to-br from-yellow-500 to-orange-600 shadow-lg shadow-yellow-500/25' : 'bg-gray-100'
+                }`}>
+                  <Award className={`w-8 h-8 ${achievement.unlocked ? 'text-white' : 'text-gray-400'}`} />
+                </div>
+                <h3 className="text-gray-900 font-bold mb-2 text-center">{t(achievement.nameKey)}</h3>
+                <p className="text-sm text-gray-600 text-center">{t(achievement.descKey)}</p>
               </div>
             ))}
           </div>
         </section>
-      )}
-
-      <section>
-        <div className="flex items-center gap-3 mb-6">
-          <Clock className="w-6 h-6 text-blue-500" />
-          <h2 className="text-2xl font-bold text-white">Game History</h2>
-        </div>
-        <div className="bg-gray-800 rounded-lg overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-900 text-gray-400 text-sm">
-                <th className="text-left p-4">Game</th>
-                <th className="text-left p-4">Total Time</th>
-                <th className="text-left p-4">Last Played</th>
-                <th className="text-left p-4">Total Spent</th>
-                <th className="text-left p-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {gameHistory.map(game => (
-                <tr key={game.id} className="border-t border-gray-700 hover:bg-gray-700/50 transition">
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-700 rounded-lg overflow-hidden">
-                        <img 
-                          src={`https://picsum.photos/seed/${game.id}/40/40`} 
-                          alt={game.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <span className="text-white font-medium">{game.title}</span>
-                    </div>
-                  </td>
-                  <td className="p-4 text-gray-300">{game.totalTime}</td>
-                  <td className="p-4 text-gray-400">{game.lastPlayed}</td>
-                  <td className="p-4">
-                    <span className={`font-medium ${game.totalSpent === '$0.00' ? 'text-gray-400' : 'text-green-400'}`}>
-                      {game.totalSpent}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <button className="text-blue-400 hover:text-blue-300 transition">
-                      Play Again
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section className="mt-8">
-        <div className="flex items-center gap-3 mb-6">
-          <Award className="w-6 h-6 text-yellow-500" />
-          <h2 className="text-2xl font-bold text-white">Achievements</h2>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { name: 'First Steps', desc: 'Play your first game', unlocked: true },
-            { name: 'Time Warrior', desc: 'Play for 100 hours', unlocked: true },
-            { name: 'Explorer', desc: 'Try 10 different games', unlocked: true },
-            { name: 'Dedicated', desc: 'Play for 1000 hours', unlocked: false },
-          ].map((achievement, index) => (
-            <div 
-              key={index} 
-              className={`bg-gray-800 rounded-lg p-4 border-2 ${
-                achievement.unlocked ? 'border-yellow-500/50' : 'border-gray-700 opacity-50'
-              }`}
-            >
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${
-                achievement.unlocked ? 'bg-yellow-500/20' : 'bg-gray-700'
-              }`}>
-                <Award className={`w-6 h-6 ${achievement.unlocked ? 'text-yellow-500' : 'text-gray-500'}`} />
-              </div>
-              <h3 className="text-white font-medium mb-1">{achievement.name}</h3>
-              <p className="text-xs text-gray-400">{achievement.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      </div>
     </div>
   );
 };

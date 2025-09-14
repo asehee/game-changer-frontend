@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
 import { Play, Users, Clock, Star } from 'lucide-react';
+import { useTranslation } from '../hooks/useTranslation';
 
 const GameCard = ({ game }) => {
+  const { t } = useTranslation();
   return (
     <Link 
       to={`/game/${game.id}`}
@@ -17,13 +19,13 @@ const GameCard = ({ game }) => {
           <div className="absolute bottom-4 left-4 right-4">
             <button className="w-full bg-white/90 backdrop-blur-md hover:bg-white text-gray-900 font-bold py-3 px-4 rounded-2xl flex items-center justify-center gap-2 transform translate-y-10 group-hover:translate-y-0 transition-all duration-300 shadow-lg shadow-black/20">
               <Play className="w-5 h-5" />
-              Play Now
+              {t('playNow')}
             </button>
           </div>
         </div>
         {game.discount && (
           <div className="absolute top-3 right-3 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-xl shadow-lg shadow-red-500/25 backdrop-blur-sm">
-            -{game.discount}% OFF
+            -{game.discount}% {t('off')}
           </div>
         )}
       </div>
@@ -57,15 +59,15 @@ const GameCard = ({ game }) => {
           <div className="flex items-center justify-between pt-2 border-t border-gray-100/50">
             <div className="flex items-center gap-2">
               {game.price === 0 ? (
-                <span className="text-green-600 font-bold text-lg tracking-tight">Free</span>
+                <span className="text-green-600 font-bold text-lg tracking-tight">{t('freeToPlay')}</span>
               ) : (
                 <div className="flex items-center gap-1">
-                  <span className="text-blue-600 font-bold text-lg tracking-tight">${game.price}/hr</span>
+                  <span className="text-blue-600 font-bold text-lg tracking-tight">${game.price}{t('perHour')}</span>
                 </div>
               )}
             </div>
             <div className="text-xs text-gray-400 font-medium">
-              Pay per minute
+              {t('payPerSecond')}
             </div>
           </div>
         )}

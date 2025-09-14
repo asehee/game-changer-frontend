@@ -12,30 +12,55 @@ const GamePlay = () => {
 
   useEffect(() => {
     const gameDatabase = {
+      // 모든 게임이 9999포트의 실제 게임을 보여줍니다
       '1': { 
         id: '1',
         title: 'Cyber Warriors (WaveWar)',
         description: 'Epic multiplayer space battle game with real-time combat',
-        price: 0.001,
-        gameUrl: 'http://localhost:9999/wavewar',
+        price: 0.5,
+        gameUrl: 'http://localhost:9999',
         isExternal: true
       },
       '2': { 
         id: '2',
-        title: 'Space Odyssey',
+        title: 'Space Odyssey (WaveWar)',
         description: 'Explore infinite galaxies in this space simulation',
-        price: 0.002,
-        gameUrl: 'http://localhost:9999/wavewar',
+        price: 0.8,
+        gameUrl: 'http://localhost:9999',
         isExternal: true
       },
-      // 기본값으로 간단한 데모 게임
+      '3': { 
+        id: '3',
+        title: 'Fantasy Quest (WaveWar)',
+        description: 'Medieval RPG adventure with magical creatures',
+        price: 0.0,
+        gameUrl: 'http://localhost:9999',
+        isExternal: true
+      },
+      '4': { 
+        id: '4',
+        title: 'Racing Thunder (WaveWar)',
+        description: 'High-speed racing with blockchain rewards',
+        price: 0.3,
+        gameUrl: 'http://localhost:9999',
+        isExternal: true
+      },
+      '5': { 
+        id: '5',
+        title: 'Battle Arena (WaveWar)',
+        description: 'Competitive 5v5 MOBA with unique heroes',
+        price: 0.0,
+        gameUrl: 'http://localhost:9999',
+        isExternal: true
+      },
+      // 기본값도 실제 게임으로 연결
       'default': {
         id: gameId,
-        title: 'Demo Game',
-        description: 'Interactive demo game',
+        title: 'WaveWar Demo',
+        description: '🎮 Interactive space battle game - Use arrow keys to move and space to shoot!',
         price: 0.001,
-        gameUrl: null,
-        isExternal: false
+        gameUrl: 'http://localhost:9999',
+        isExternal: true
       }
     };
     

@@ -3,13 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { User, Wallet, ChevronDown, Gamepad2, Library, Users, TrendingUp, Menu, X, Languages } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useTranslation } from '../hooks/useTranslation';
-import axios from 'axios';
+import WalletModal from './WalletModal';
 
 const Header = () => {
   const [walletAddress, setWalletAddress] = useState(null);
   const [nickname, setNickname] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const navigate = useNavigate();
   const { toggleLanguage, language } = useLanguage();
   const { t } = useTranslation();
@@ -21,40 +22,21 @@ const Header = () => {
     }
   }, [walletAddress]);
 
-  const connectWallet = async () => {
-    try {
-      // Mock wallet address for testing
-      const mockAddress = '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEA1';
-      
-      console.log('🔄 Attempting to connect wallet...');
-      
-      // Test API call to backend
-      const response = await axios.post('http://localhost:3000/api/users/wallet-connect', {
-        connectedAddress: mockAddress
-      });
-      
-      console.log('✅ API Response:', response.data);
-      
-      if (response.data.success) {
-        setWalletAddress(mockAddress);
-        console.log('🎉 Wallet connected successfully!');
-      }
-      
-    } catch (error) {
-      console.error('❌ Error connecting wallet:', error);
-      
-      if (error.code === 'ERR_NETWORK') {
-        console.error('🚫 CORS Error or Network Issue:', error.message);
-        alert('CORS 에러 또는 네트워크 연결 문제가 발생했습니다.');
-      } else {
-        console.error('🔥 API Error:', error.response?.data || error.message);
-      }
-      
-      // For demo purposes, still set wallet address even if API fails
-      const mockAddress = '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEA1';
-      setWalletAddress(mockAddress);
-    }
+  const connectWallet = () => {
+    setIsWalletModalOpen(true);
   };
+
+  const handleWalletConnected = (address) => {
+    setWalletAddress(address);
+  };
+
+  // localStorage에서 연결된 지갑 정보를 확인
+  useEffect(() => {
+    const savedWallet = localStorage.getItem('connectedWallet');
+    if (savedWallet) {
+      setWalletAddress(savedWallet);
+    }
+  }, []);
 
   const formatAddress = (address) => {
     if (!address) return '';
@@ -160,6 +142,8 @@ const Header = () => {
                         setWalletAddress(null);
                         setNickname('');
                         setIsDropdownOpen(false);
+                        localStorage.removeItem('connectedWallet');
+                        localStorage.removeItem('userId');
                       }}
                       className="block w-full text-left px-4 py-3 hover:bg-red-50/50 transition-all duration-200 text-red-600 font-medium"
                     >
@@ -179,6 +163,13 @@ const Header = () => {
           </div>
         </div>
       </div>
+
+      {/* WalletModal은 이제 Portal을 통해 body에 렌더링됨 */}
+      <WalletModal 
+        isOpen={isWalletModalOpen}
+        onClose={() => setIsWalletModalOpen(false)}
+        onWalletConnected={handleWalletConnected}
+      />
     </header>
   );
 };
