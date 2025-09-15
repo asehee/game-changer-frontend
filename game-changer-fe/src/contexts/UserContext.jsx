@@ -101,7 +101,7 @@ export const UserProvider = ({ children }) => {
     if (!address) return;
     setIsBalanceLoading(true);
     try {
-      const balanceData = await UserApiService.getUserBalance(walletAddress);
+      const balanceData = await UserApiService.getUserBalance(address);
       console.log(JSON.stringify(balanceData))
       setUserBalance(balanceData);
     } catch (error) {

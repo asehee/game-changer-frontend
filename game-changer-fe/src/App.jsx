@@ -6,6 +6,7 @@ import GameLobby from './pages/GameLobby';
 import GamePlay from './pages/GamePlay';
 import MyPage from './pages/MyPage';
 import DeveloperDashboard from './pages/DeveloperDashboard';
+import TokenFaucet from './pages/TokenFaucet';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
               <Route path="game/:gameId" element={<GamePlay />} />
               <Route path="mypage" element={<MyPage />} />
               <Route path="developer" element={<DeveloperDashboard />} />
+              <Route path="test" element={<TokenFaucet />} />
             </Route>
           </Routes>
         </Router>

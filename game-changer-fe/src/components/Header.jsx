@@ -68,7 +68,7 @@ const Header = () => {
       if (!user?.isFirstChargeCompleted || !user?.tempWallet) return;
 
       try {
-        await getTempBalance(walletAddress);
+        await getTempBalance(user.wallet);
       } catch (error) {
         console.error(t('tempWalletBalanceError') + ': ', error);
       }
