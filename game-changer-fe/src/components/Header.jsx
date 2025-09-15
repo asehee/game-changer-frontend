@@ -183,7 +183,7 @@ const Header = () => {
                           <div className="flex items-center gap-1.5">
                             <DollarSign className="w-5 h-5 text-green-600" />
                             <span className="text-lg font-bold text-green-900">
-                              {parseFloat(userBalance?.tokenBalance?.value || 0).toLocaleString()}
+                              {parseFloat(userBalance?.tokenBalance || 0).toLocaleString()}
                             </span>
                             <span className="text-sm font-medium text-green-700">USD</span>
                           </div>

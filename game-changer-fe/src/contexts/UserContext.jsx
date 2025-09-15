@@ -129,7 +129,7 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     // user 객체가 존재하고, 첫 충전이 완료되었을 때 잔액 조회
     if (user && user.isFirstChargeCompleted && user.tempWallet) {
-      getTempBalance(walletAddress); // user.wallet 대신 user.tempWallet이 더 적절할 수 있음
+      getTempBalance(user.wallet); // user.wallet 대신 user.tempWallet이 더 적절할 수 있음
     }
   }, [user, getTempBalance]); // user 또는 getTempBalance 함수가 변경될 때 실행
 
