@@ -8,7 +8,25 @@ export const translations = {
     myProfile: "내 프로필",
     developerDashboard: "개발자 대시보드",
     disconnect: "연결 해제",
-    
+    tokenFaucet: "(테스트용 토큰 받기)",
+
+    // Header - Wallet Related
+    checkingWallet: "지갑 확인 중...",
+    gemWalletRequired: "GemWallet 설치 필요",
+    gemWalletApiLoadError: "GemWallet API가 제대로 로드되지 않았습니다.",
+    gemWalletInstallCheckFail: "GemWallet 설치 확인 실패",
+    wrongNetwork: "GemWallet의 네트워크를 'Testnet'으로 변경한 후 다시 시도해주세요.",
+    balance: '잔액',
+    checkingBalance: "잔액 확인 중...",
+    xrpBalance: 'XRP',
+    tokenBalance: 'LUSD',
+    forFee: '수수료 용: ',
+    firstChargeButton: '첫 충전 시작',
+    chargingInProgress: '첫 충전 중...',
+    chargeComplete: '첫 충전이 완료되었습니다!',
+    chargeError: '첫 충전 실패',
+    tempWalletBalanceError: '충전 잔액 조회 실패',
+
     // GameLobby Main
     welcomeTitle: "GameChanger에 오신 것을 환영합니다",
     welcomeDescription: "🎮 시간 당 과금으로 게임을 즐겨보세요.",
@@ -128,7 +146,26 @@ export const translations = {
     myProfile: "My Profile",
     developerDashboard: "Developer Dashboard",
     disconnect: "Disconnect",
+    tokenFaucet: "(Get test token)",
     
+    // Wallet Related
+    connectWallet: 'Connect Wallet',
+    checkingWallet: 'Checking Wallet...',
+    gemWalletRequired: 'GemWallet Required',
+    gemWalletApiLoadError: "GemWallet API is not load properly.",
+    gemWalletInstallCheckFail: "Failed to verify GemWallet is installed",
+    wrongNetwork: "Please change GemWallet network to 'Testnet' and try again.",
+    balance: 'Balance',
+    checkingBalance: "Checking balance...",
+    forFee: 'Balance for fees: ',
+    xrpBalance: 'XRP',
+    tokenBalance: 'LUSD',
+    firstChargeButton: 'Start First Charge',
+    chargingInProgress: 'Charging...',
+    chargeComplete: 'First charging completed!',
+    chargeError: 'Charging failed',
+    tempWalletBalanceError: 'Failed to fetch charged balance',
+
     // GameLobby Main
     welcomeTitle: "Welcome to GameChanger",
     welcomeDescription: "🎮 Discover amazing blockchain games with our innovative pay-per-minute model",
