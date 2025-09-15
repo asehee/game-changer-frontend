@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import DeveloperApiService from '../services/developerApi';
+import UserApiService from '../services/userApi';
 
 const UserContext = createContext();
 
@@ -15,7 +16,10 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [walletAddress, setWalletAddress] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isBalanceLoading, setIsBalanceLoading] = useState(false);
+  const [isCharging, setIsCharging] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [userBalance, setUserBalance] = useState(null);
 
   // 지갑 연결 (내부 함수)
   const _connectWallet = async (address) => {
@@ -25,17 +29,13 @@ export const UserProvider = ({ children }) => {
       // 사용자 정보 조회 또는 생성
       let userData;
       try {
-        userData = await DeveloperApiService.getUserInfo(address);
+        userData = await UserApiService.findOrCreateUser(address);
       } catch (error) {
-        if (error.message.includes('not found')) {
-          // 사용자가 없으면 생성
-          userData = await DeveloperApiService.findOrCreateUser(address);
-        } else {
-          throw error;
-        }
+        throw error;
       }
 
       setUser(userData);
+      console.log(JSON.stringify(userData));
       setWalletAddress(address);
       setIsConnected(true);
       localStorage.setItem('connectedWallet', address);
@@ -53,16 +53,8 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     const initializeUser = async () => {
       try {
-        const savedWallet = localStorage.getItem('connectedWallet');
-        
-        // 개발 중 잘못 저장된 test 데이터 정리 (임시)
-        if (savedWallet === 'test') {
-          console.warn('Development test wallet detected, clearing localStorage');
-          localStorage.clear();
-          return;
-        }
-        
-        if (savedWallet && savedWallet !== 'test') {
+        const savedWallet = localStorage.getItem('connectedWallet');        
+        if (savedWallet) {
           await _connectWallet(savedWallet);
         }
       } catch (error) {
@@ -95,7 +87,7 @@ export const UserProvider = ({ children }) => {
     if (!walletAddress) return;
     
     try {
-      const userData = await DeveloperApiService.getUserInfo(walletAddress);
+      const userData = await UserApiService.getUserInfo(walletAddress);
       setUser(userData);
     } catch (error) {
       console.error('Failed to refresh user data:', error);
@@ -103,6 +95,43 @@ export const UserProvider = ({ children }) => {
       disconnectWallet();
     }
   };
+
+  // 잔액 조회 함수
+  const getTempBalance = useCallback(async (address) => {
+    if (!address) return;
+    setIsBalanceLoading(true);
+    try {
+      const balanceData = await UserApiService.getUserBalance(walletAddress);
+      console.log(JSON.stringify(balanceData))
+      setUserBalance(balanceData);
+    } catch (error) {
+      console.error('Failed to get temp balance:', error);
+    } finally {
+      setIsBalanceLoading(false);
+    }
+  }, []);
+
+  // 첫 충전 처리 함수
+  const setupFirstCharge = useCallback(async (address) => {
+    if (!address) return;
+    setIsCharging(true);
+    try {
+      await UserApiService.setupFirstCharge(address);
+      await _connectWallet(address)
+    } catch (error) {
+      console.error('Failed to setup first charge:', error);
+      throw error;
+    } finally {
+      setIsCharging(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // user 객체가 존재하고, 첫 충전이 완료되었을 때 잔액 조회
+    if (user && user.isFirstChargeCompleted && user.tempWallet) {
+      getTempBalance(walletAddress); // user.wallet 대신 user.tempWallet이 더 적절할 수 있음
+    }
+  }, [user, getTempBalance]); // user 또는 getTempBalance 함수가 변경될 때 실행
 
   // 개발자 활성화
   const activateDeveloper = async () => {
@@ -119,13 +148,20 @@ export const UserProvider = ({ children }) => {
 
   const value = {
     user,
+    userBalance,
     walletAddress,
     loading,
     isConnected,
+    isBalanceLoading,
+    isCharging,
     connectWallet,
     disconnectWallet,
     refreshUser,
     activateDeveloper,
+    getTempBalance,
+    setupFirstCharge,
+    // 외부에서 상태 직접 업데이트할 수 있도록
+    setUserBalance,
     // 편의 속성들
     isLoggedIn: isConnected && user,
     isDeveloper: user?.isDeveloper || false,

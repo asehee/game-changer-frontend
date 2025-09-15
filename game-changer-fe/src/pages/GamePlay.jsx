@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Play, Square, Clock, DollarSign, AlertCircle, Maximize2, Volume2, Settings } from 'lucide-react';
 import { usePlaySession } from '../hooks/usePlaySession';
 import { useTranslation } from '../hooks/useTranslation';
-import { useWalletBalance } from '../contexts/WalletBalanceContext';
 import { useUser } from '../contexts/UserContext';
 import DeveloperApiService from '../services/developerApi';
 
@@ -11,7 +10,7 @@ const GamePlay = () => {
   const { gameId } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { walletAddress, isConnected } = useUser();
+  const { walletAddress, isConnected, userBalance } = useUser();
   
   // 플레이 세션 관리
   const {
@@ -26,7 +25,6 @@ const GamePlay = () => {
   } = usePlaySession(gameId, walletAddress);
 
   const [gameData, setGameData] = useState(null);
-  const { userBalance, hasWallet, loading: balanceLoading, fetchBalance } = useWalletBalance();
 
   useEffect(() => {
     const gameDatabase = {

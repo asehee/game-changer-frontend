@@ -1,66 +1,124 @@
+// External Dependencies
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Wallet, ChevronDown, Gamepad2, Library, Users, TrendingUp, Menu, X, Languages, DollarSign, CreditCard } from 'lucide-react';
+import { 
+  User, Wallet, ChevronDown, Gamepad2, 
+  Library, Users, TrendingUp, Menu, 
+  X, Languages, DollarSign, CreditCard 
+} from 'lucide-react';
+import { formatAddress } from '../utils';
+import { isInstalled, getAddress, getNetwork } from '@gemwallet/api';
+
+// Internal Dependencies
 import { useLanguage } from '../contexts/LanguageContext';
 import { useUser } from '../contexts/UserContext';
 import { useTranslation } from '../hooks/useTranslation';
-import { useWalletBalance } from '../contexts/WalletBalanceContext';
-import WalletModal from './WalletModal';
 
 const Header = () => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  // Hooks
   const navigate = useNavigate();
   const { toggleLanguage, language } = useLanguage();
-  const { user, walletAddress, isConnected, isLoggedIn, nickname, loading, connectWallet, disconnectWallet } = useUser();
   const { t } = useTranslation();
-  const { userBalance, hasWallet, loading: balanceLoading, fetchBalance, setupFirstCharge } = useWalletBalance();
-  const [isCharging, setIsCharging] = useState(false);
+  const { 
+    user, 
+    userBalance, 
+    walletAddress, 
+    isConnected, 
+    isBalanceLoading,
+    isCharging,
+    connectWallet,
+    disconnectWallet,
+    getTempBalance, 
+    setupFirstCharge,
+    nickname
+  } = useUser();
 
-  // 지갑 연결 모달 열기
-  const openWalletModal = () => {
-    setIsWalletModalOpen(true);
-  };
+  // Local State
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isGemWalletInstalled, setIsGemWalletInstalled] = useState(null);
 
-  // 지갑 연결 성공 핸들러
-  const handleWalletConnected = async (address) => {
-    try {
-      await connectWallet(address);
-      // 지갑 연결 성공 시 잔액 조회
-      fetchBalance(address);
-    } catch (error) {
-      console.error('Failed to connect wallet:', error);
-      alert('지갑 연결에 실패했습니다. 다시 시도해주세요.');
-    }
-  };
-
-  // 연결된 지갑이 있고 UserContext 로딩이 완료된 후 잔액 조회 (MyPage에서는 제외)
+  // Effects
   useEffect(() => {
-    if (walletAddress && isConnected && !loading && window.location.pathname !== '/mypage') {
-      fetchBalance(walletAddress);
-    }
-  }, [walletAddress, isConnected, loading, fetchBalance]);
+    const checkGemWalletInstallation = () => {
+      if (typeof isInstalled !== 'function') {
+        console.error(t('gemWalletApiLoadError'));
+        setIsGemWalletInstalled(false);
+        return;
+      }
 
-  // 충전 핸들러
-  const handleCharge = async () => {
-    if (!walletAddress) return;
-    
-    setIsCharging(true);
+      isInstalled()
+        .then(response => setIsGemWalletInstalled(response.result.isInstalled))
+        .catch(error => {
+          console.error(t('gemWalletInstallCheckFail'), error);
+          setIsGemWalletInstalled(false);
+        });
+    };
+
+    if (document.readyState === 'complete') {
+      checkGemWalletInstallation();
+    } else {
+      window.addEventListener('load', checkGemWalletInstallation);
+      return () => window.removeEventListener('load', checkGemWalletInstallation);
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchTempBalance = async () => {
+      if (!user?.isFirstChargeCompleted || !user?.tempWallet) return;
+
+      try {
+        await getTempBalance(walletAddress);
+      } catch (error) {
+        console.error(t('tempWalletBalanceError') + ': ', error);
+      }
+    };
+
+    fetchTempBalance();
+  }, [user, getTempBalance]);
+
+  // Wallet Button Text Helper
+  const getWalletButtonText = () => {
+    if (isGemWalletInstalled === null) return t('checkingWallet');
+    if (isGemWalletInstalled) return t('connectWallet');
+    return t('gemWalletRequired');
+  };
+
+  // Event Handlers
+  const handleGemWalletConnect = async () => {
+    if (!isGemWalletInstalled) {
+      alert(t('installGemWallet'));
+      window.open('https://gemwallet.app/', '_blank');
+      return;
+    }
+
+    try {
+      const addressResponse = await getAddress();
+      if (!addressResponse.result?.address) return;
+
+      const networkResponse = await getNetwork();
+      const currentNetwork = networkResponse.result?.network;
+
+      if (currentNetwork?.toUpperCase() !== 'TESTNET') {
+        alert(t('wrongNetwork'));
+        return;
+      }
+
+      await connectWallet(addressResponse.result.address);
+    } catch (error) {
+      console.error(t('walletConnectionError'), error);
+      alert(t('walletConnectionError'));
+    }
+  };
+
+  const handleFirstCharge = async () => {
     try {
       await setupFirstCharge(walletAddress);
-      alert('충전이 완료되었습니다!');
+      alert(t('chargeComplete'));
     } catch (error) {
-      console.error('Failed to charge:', error);
-      alert(`충전 실패: ${error.message}`);
-    } finally {
-      setIsCharging(false);
+      console.error(t('chargeError') + ': ', error);
+      alert(t('chargeError') + ': '+`${error.message}`);
     }
-  };
-
-  const formatAddress = (address) => {
-    if (!address) return '';
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
   return (
@@ -103,48 +161,63 @@ const Header = () => {
                 to="/test" 
                 className="px-4 py-2.5 rounded-xl hover:bg-gray-100 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium"
               >
-                Token Faucet
+                {t('tokenFaucet')}
               </Link>
             </nav>
           </div>
 
           <div className="flex items-center space-x-3">
             
-            {/* 잔액 표시 및 충전 버튼 - 지갑 연결 상태일 때만 */}
-            {walletAddress && (
+           {/* isConnected 이후의 렌더링 로직을 명확하게 분리 */}
+           {isConnected && user && (
               <div className="hidden md:flex items-center gap-2">
-                {hasWallet ? (
+                {user.isFirstChargeCompleted && user.tempWallet ? (
+                  // --- Case 1: 첫 충전이 완료된 사용자 ---
                   <>
-                    <div className="bg-green-900/50 backdrop-blur-sm rounded-2xl px-4 py-2 flex items-center gap-2 border border-green-700/20">
-                      <DollarSign className="w-4 h-4 text-green-400" />
-                      <span className="text-sm font-medium text-green-300">
-                        ${(userBalance || 0).toFixed(4)}
-                      </span>
-                    </div>
-                    {/* 잔액이 0이면 충전 버튼도 함께 표시 */}
-                    {userBalance === 0 && (
-                      <button
-                        onClick={handleCharge}
-                        disabled={isCharging}
-                        className={`bg-orange-600/90 hover:bg-orange-700 backdrop-blur-sm text-white px-3 py-2 rounded-2xl font-medium transition-all duration-200 flex items-center gap-2 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-105 text-sm ${
-                          isCharging ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
+                    <div className="relative group"> {/* ⬅️ 1. 이 컨테이너에 group 클래스 추가 */}
+                      {/* 기본으로 보이는 IOU 잔액 (기존 초록색 스타일 적용) */}
+                      <div className="bg-green-100 rounded-2xl px-4 py-2 flex items-center gap-2 border border-green-200 shadow-sm cursor-pointer transition-all duration-200 group-hover:shadow-lg">
+                        {isBalanceLoading ? (
+                          <span className="text-sm font-medium text-green-800">{t('checkingBalance')}</span>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <DollarSign className="w-5 h-5 text-green-600" />
+                            <span className="text-lg font-bold text-green-900">
+                              {parseFloat(userBalance?.tokenBalance?.value || 0).toLocaleString()}
+                            </span>
+                            <span className="text-sm font-medium text-green-700">USD</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 🔥 마우스를 올렸을 때 '아래'에 보이는 XRP 잔액 (툴팁) */}
+                      <div 
+                        className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-max bg-gray-800 text-white text-xs rounded-lg px-3 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
                       >
-                        <CreditCard className="w-4 h-4" />
-                        {isCharging ? '충전 중...' : '충전하기'}
-                      </button>
-                    )}
+                        <div className="flex items-center gap-1.5">
+                            {/* XRP 아이콘 SVG */}
+                            <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w.org/2000/svg" className="w-3 h-3 fill-current text-gray-300">
+                              <title>XRP</title>
+                              <path d="M12 0c-6.6 0-12 5.4-12 12s5.4 12 12 12 12-5.4 12-12-5.4-12-12-12zm.23 18.38l-3.6-3.62.9-.9 2.7 2.7 5.8-5.83.9.9-6.7 6.75z"/>
+                            </svg>
+                            <span>{t('forFee') + parseFloat(userBalance?.xrpBalance || 0).toFixed(6).toString()+" XRP"}</span>
+                        </div>
+                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full w-0 h-0 border-x-4 border-x-transparent border-b-[4px] border-b-gray-800"></div>
+                      </div>
+
+                    </div>
                   </>
                 ) : (
+                  // --- Case 2: 아직 첫 충전을 안 한 사용자 ---
                   <button
-                    onClick={handleCharge}
-                    disabled={isCharging || balanceLoading}
+                    onClick={handleFirstCharge}
+                    disabled={isCharging}
                     className={`bg-orange-600/90 hover:bg-orange-700 backdrop-blur-sm text-white px-3 py-2 rounded-2xl font-medium transition-all duration-200 flex items-center gap-2 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-105 text-sm ${
-                      isCharging || balanceLoading ? 'opacity-50 cursor-not-allowed' : ''
+                      isCharging ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
                     <CreditCard className="w-4 h-4" />
-                    {isCharging ? '충전 중...' : balanceLoading ? '확인 중...' : '임시 지갑 생성'}
+                    {isCharging ? t('chargingInProgress') : t('firstChargeButton')}
                   </button>
                 )}
               </div>
@@ -163,11 +236,12 @@ const Header = () => {
             
             {!isConnected ? (
               <button
-                onClick={openWalletModal}
+                onClick={handleGemWalletConnect}
+                disabled={isGemWalletInstalled !== true}
                 className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-2.5 rounded-2xl font-medium transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-105 flex items-center gap-2 backdrop-blur-sm"
               >
                 <Wallet className="w-4 h-4" />
-                {t('connectWallet')}
+                {getWalletButtonText()}
               </button>
             ) : (
               <div className="relative">
@@ -227,13 +301,6 @@ const Header = () => {
           </div>
         </div>
       </div>
-
-      {/* WalletModal은 이제 Portal을 통해 body에 렌더링됨 */}
-      <WalletModal 
-        isOpen={isWalletModalOpen}
-        onClose={() => setIsWalletModalOpen(false)}
-        onWalletConnected={handleWalletConnected}
-      />
     </header>
   );
 };
