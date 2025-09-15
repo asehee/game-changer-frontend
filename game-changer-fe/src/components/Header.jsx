@@ -122,7 +122,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white/95 backdrop-blur-xl shadow-lg shadow-black/5 border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-black/50 backdrop-blur-xl shadow-lg shadow-black/20 border-b border-white/10 sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-8">
@@ -130,7 +130,7 @@ const Header = () => {
               <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
                 <Gamepad2 className="w-6 h-6 text-white" />
               </div>
-              <span className="font-bold text-xl text-gray-900 tracking-tight">
+              <span className="font-bold text-xl text-white tracking-tight">
                 GameChanger
               </span>
             </Link>
@@ -138,28 +138,28 @@ const Header = () => {
             <nav className="hidden md:flex space-x-2">
               <Link 
                 to="/" 
-                className="px-4 py-2.5 rounded-xl hover:bg-gray-100 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium"
+                className="px-4 py-2.5 rounded-xl hover:bg-white/10 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-white hover:text-blue-400 font-medium"
               >
                 <Library className="w-4 h-4" />
                 {t('store')}
               </Link>
               <Link 
                 to="/mypage" 
-                className="px-4 py-2.5 rounded-xl hover:bg-gray-100 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium"
+                className="px-4 py-2.5 rounded-xl hover:bg-white/10 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-white hover:text-blue-400 font-medium"
               >
                 <User className="w-4 h-4" />
                 {t('library')}
               </Link>
               <Link 
                 to="/developer" 
-                className="px-4 py-2.5 rounded-xl hover:bg-gray-100 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium"
+                className="px-4 py-2.5 rounded-xl hover:bg-white/10 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-white hover:text-blue-400 font-medium"
               >
                 <TrendingUp className="w-4 h-4" />
                 {t('developer')}
               </Link>
               <Link 
                 to="/test" 
-                className="px-4 py-2.5 rounded-xl hover:bg-gray-100 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium"
+                className="px-4 py-2.5 rounded-xl hover:bg-white/10 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-white hover:text-blue-400 font-medium"
               >
                 {t('tokenFaucet')}
               </Link>
@@ -212,7 +212,7 @@ const Header = () => {
                   <button
                     onClick={handleFirstCharge}
                     disabled={isCharging}
-                    className={`bg-orange-600/90 hover:bg-orange-700 backdrop-blur-sm text-white px-3 py-2 rounded-2xl font-medium transition-all duration-200 flex items-center gap-2 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-105 text-sm ${
+                    className={`backdrop-blur-xl bg-gradient-to-r from-blue-500/30 to-purple-500/30 hover:from-blue-500/40 hover:to-purple-500/40 border border-blue-400/30 text-white px-3 py-2 rounded-2xl font-medium transition-all duration-200 flex items-center gap-2 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-105 text-sm ${
                       isCharging ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >

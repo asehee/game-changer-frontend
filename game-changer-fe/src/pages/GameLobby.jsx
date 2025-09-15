@@ -13,6 +13,7 @@ const GameLobby = () => {
     new: []
   });
   const [loading, setLoading] = useState(false);
+  const [genres, setGenres] = useState(['all']);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -27,6 +28,10 @@ const GameLobby = () => {
         if (response.data && response.data.length > 0) {
           const allGames = response.data;
           
+          // 장르 추출 (중복 제거 및 빈 문자열 제외)
+          const uniqueGenres = [...new Set(allGames.map(game => game.genre).filter(genre => genre))];
+          setGenres(['all', ...uniqueGenres]);
+          
           // 게임을 평점과 인기도에 따라 정렬
           const sortedByRating = [...allGames].sort((a, b) => (b.rating || 0) - (a.rating || 0));
           const sortedByPlayers = [...allGames].sort((a, b) => (b.playerCount || 0) - (a.playerCount || 0));
@@ -39,6 +44,7 @@ const GameLobby = () => {
           });
           
           console.log('🎮 Games loaded from API successfully');
+          console.log('📚 Available genres:', uniqueGenres);
         } else {
           console.log('⚠️ No games found from API, using mock data');
           setMockGames();
@@ -79,74 +85,113 @@ const GameLobby = () => {
     fetchGames();
   }, []);
 
-  const categories = [
-    { id: 'all', name: t('allGames') },
-    { id: 'action', name: t('action') },
-    { id: 'adventure', name: t('adventure') },
-    { id: 'strategy', name: t('strategy') },
-    { id: 'simulation', name: t('simulation') },
-    { id: 'rpg', name: t('rpg') },
-    { id: 'puzzle', name: t('puzzle') },
-    { id: 'horror', name: t('horror') },
-    { id: 'racing', name: t('racing') },
-    { id: 'casual', name: t('casual') },
-  ];
+  // 장르 번역 매핑
+  const genreTranslations = {
+    'all': t('allGames'),
+    'action': t('action'),
+    'adventure': t('adventure'),  
+    'strategy': t('strategy'),
+    'simulation': t('simulation'),
+    'rpg': t('rpg'),
+    'puzzle': t('puzzle'),
+    'horror': t('horror'),
+    'racing': t('racing')
+  };
+
+  // 게임 필터링 함수
+  const filterGamesByGenre = (gamesList) => {
+    if (selectedCategory === 'all') {
+      return gamesList;
+    }
+    return gamesList.filter(game => 
+      game.genre && game.genre.toLowerCase() === selectedCategory.toLowerCase()
+    );
+  };
+
+  // 검색어로 필터링하는 함수
+  const filterGamesBySearch = (gamesList) => {
+    if (!searchTerm.trim()) {
+      return gamesList;
+    }
+    return gamesList.filter(game =>
+      game.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      game.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
+  // 최종 필터링된 게임들
+  const getFilteredGames = (gamesList) => {
+    let filtered = filterGamesByGenre(gamesList);
+    filtered = filterGamesBySearch(filtered);
+    return filtered;
+  };
 
   return (
-    <div className="min-h-screen bg-white transition-colors duration-200">
-      <div className="relative mb-16 rounded-3xl overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-16 shadow-2xl shadow-black/20">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-purple-600/10"></div>
-        <div className="relative z-10 text-center">
-          <h1 className="text-7xl font-bold text-white mb-6 tracking-tight">
-            {t('welcomeTitle')}
-          </h1>
-          <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
-            {t('welcomeDescription')}
-          </p>
-          
-          <div className="flex flex-col items-center gap-6">
-            <div className="relative max-w-2xl mx-auto w-full">
-              <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder={t('searchPlaceholder')}
-                className="w-full pl-14 pr-6 py-5 bg-white/90 backdrop-blur-md rounded-3xl focus:outline-none focus:ring-4 focus:ring-blue-400/30 placeholder-gray-500 shadow-xl font-medium text-gray-800 hover:bg-white transition-all duration-200"
-              />
+    <div className="min-h-screen relative">
+      {/* Glassmorphism Background */}
+      <div
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('/src/assets/bg.png')`,
+        }}
+      />
+      <div className="bg-black/30 fixed inset-0" />
+      
+      {/* Main Content */}
+      <div className="relative z-10">
+        <div className="relative mb-16 backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl overflow-hidden p-16 shadow-2xl mx-6 mt-6">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-purple-600/10"></div>
+          <div className="relative z-10 text-center">
+            <h1 className="text-7xl font-bold text-white mb-6 tracking-tight">
+              {t('welcomeTitle')}
+            </h1>
+            <p className="text-xl text-white/80 mb-10 max-w-2xl mx-auto leading-relaxed">
+              {t('welcomeDescription')}
+            </p>
+            
+            <div className="flex flex-col items-center gap-6">
+              <div className="relative max-w-2xl mx-auto w-full">
+                <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder={t('searchPlaceholder')}
+                  className="w-full pl-14 pr-6 py-5 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl focus:outline-none focus:ring-4 focus:ring-white/30 placeholder-white/50 shadow-xl font-medium text-white hover:bg-white/20 transition-all duration-200"
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="mb-12">
-        <div className="flex items-center gap-3 overflow-x-auto pb-2">
-          {categories.map(category => (
+      <div className="mb-12 px-6 py-8">
+        <div className="flex items-center justify-center gap-3 overflow-x-auto scrollbar-hide py-2">
+          {genres.map(genre => (
             <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`px-8 py-4 rounded-3xl font-medium transition-all duration-200 whitespace-nowrap shadow-lg backdrop-blur-sm ${
-                selectedCategory === category.id
-                  ? 'bg-blue-600 text-white shadow-blue-500/25 hover:shadow-blue-500/40 scale-105'
-                  : 'bg-white/80 text-gray-700 hover:bg-white/90 border border-white/20 shadow-black/5 hover:shadow-xl hover:scale-105'
+              key={genre}
+              onClick={() => setSelectedCategory(genre)}
+              className={`px-6 py-3 rounded-2xl font-medium transition-all duration-200 whitespace-nowrap shadow-lg backdrop-blur-xl ${
+                selectedCategory === genre
+                  ? 'bg-white/30 text-white border border-white/40 shadow-white/20 hover:shadow-white/30 scale-105'
+                  : 'bg-white/10 text-white/80 hover:bg-white/20 border border-white/20 shadow-black/20 hover:shadow-xl hover:scale-105 hover:text-white'
               }`}
             >
-              {category.name}
+              {genreTranslations[genre] || genre.charAt(0).toUpperCase() + genre.slice(1)}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="space-y-20">
+      <div className="space-y-20 px-6 pb-20">
         <section>
           <div className="flex items-center justify-between mb-10">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl flex items-center justify-center shadow-lg shadow-blue-500/25">
                 <Award className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-4xl font-bold text-gray-900 tracking-tight">{t('featuredRecommended')}</h2>
+              <h2 className="text-4xl font-bold text-white tracking-tight">{t('featuredRecommended')}</h2>
             </div>
-            <button className="text-blue-600 hover:text-blue-700 flex items-center gap-2 font-medium text-lg hover:scale-105 transition-all duration-200">
+            <button className="text-white/80 hover:text-white flex items-center gap-2 font-medium text-lg hover:scale-105 transition-all duration-200">
               View All <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -163,9 +208,9 @@ const GameLobby = () => {
               <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl flex items-center justify-center shadow-lg shadow-green-500/25">
                 <TrendingUp className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-4xl font-bold text-gray-900 tracking-tight">{t('topRatedGames')}</h2>
+              <h2 className="text-4xl font-bold text-white tracking-tight">{t('topRatedGames')}</h2>
             </div>
-            <button className="text-blue-600 hover:text-blue-700 flex items-center gap-2 font-medium text-lg hover:scale-105 transition-all duration-200">
+            <button className="text-white/80 hover:text-white flex items-center gap-2 font-medium text-lg hover:scale-105 transition-all duration-200">
               View All <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -182,9 +227,9 @@ const GameLobby = () => {
               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl flex items-center justify-center shadow-lg shadow-purple-500/25">
                 <Sparkles className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-4xl font-bold text-gray-900 tracking-tight">{t('newReleases')}</h2>
+              <h2 className="text-4xl font-bold text-white tracking-tight">{t('newReleases')}</h2>
             </div>
-            <button className="text-blue-600 hover:text-blue-700 flex items-center gap-2 font-medium text-lg hover:scale-105 transition-all duration-200">
+            <button className="text-white/80 hover:text-white flex items-center gap-2 font-medium text-lg hover:scale-105 transition-all duration-200">
               View All <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -194,6 +239,7 @@ const GameLobby = () => {
             ))}
           </div>
         </section>
+      </div>
       </div>
     </div>
   );

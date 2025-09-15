@@ -231,7 +231,7 @@ const GamePlay = () => {
             <AlertCircle className="w-16 h-16 text-white" />
           </div>
           <p className="text-red-600 text-lg mb-2">세션 오류가 발생했습니다</p>
-          <p className="text-gray-400 mb-4">{sessionError}</p>
+          <p className="text-white/40 mb-4">{sessionError}</p>
           <button
             onClick={() => window.location.reload()}
             className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-2xl"
@@ -248,10 +248,10 @@ const GamePlay = () => {
           <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-lg">
             <Play className="w-16 h-16 text-white" />
           </div>
-          <p className="text-gray-600 text-lg mb-2">Ready to play {gameData?.title}?</p>
-          <p className="text-gray-400">Click "Start Game" to begin your adventure</p>
+          <p className="text-white/60 text-lg mb-2">Ready to play {gameData?.title}?</p>
+          <p className="text-white/40">Click "Start Game" to begin your adventure</p>
           {sessionLoading && (
-            <p className="text-blue-600 mt-4">게임 세션을 준비중입니다...</p>
+            <p className="text-blue-400 mt-4">게임 세션을 준비중입니다...</p>
           )}
         </div>
       );
@@ -295,78 +295,95 @@ const GamePlay = () => {
 
   if (!gameData) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-gray-800">Loading...</div>
+      <div className="min-h-screen relative">
+        <div
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url('/src/assets/bg.png')`,
+          }}
+        />
+        <div className="bg-black/30 fixed inset-0" />
+        <div className="relative z-10 flex items-center justify-center h-screen">
+          <div className="text-white">Loading...</div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="mb-8">
+    <div className="min-h-screen relative">
+      <div
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('/src/assets/bg.png')`,
+        }}
+      />
+      <div className="bg-black/30 fixed inset-0" />
+      <div className="relative z-10 container mx-auto px-6 py-8">
+        <div className="mb-8">
         <button
           onClick={() => navigate('/')}
-          className="text-gray-600 hover:text-blue-600 transition mb-6 font-medium"
+          className="text-white/80 hover:text-blue-400 transition mb-6 font-medium"
         >
           ← Back to Store
         </button>
         
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 mb-8 shadow-lg shadow-black/5 border border-white/20">
+        <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-8 mb-8 shadow-lg border border-white/20">
           <div className="flex items-start justify-between mb-6">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-3">{gameData.title}</h1>
-              <p className="text-gray-600 text-lg">{gameData.description}</p>
+              <h1 className="text-4xl font-bold text-white mb-3">{gameData.title}</h1>
+              <p className="text-white/60 text-lg">{gameData.description}</p>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-bold text-blue-600">${gameData.price}/sec</div>
+              <div className="text-3xl font-bold text-blue-400">${gameData.price}/sec</div>
               <div className="text-sm text-gray-500">Pay per second</div>
             </div>
           </div>
 
           {/* 잔액 표시 또는 충전 안내 */}
           {hasWallet ? (
-            <div className="bg-green-50/50 backdrop-blur-sm rounded-2xl p-4 mb-6 border border-green-100">
+            <div className="backdrop-blur-xl bg-green-500/10 rounded-2xl p-4 mb-6 border border-green-400/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-green-600 rounded-2xl flex items-center justify-center">
                     <DollarSign className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <div className="text-sm text-green-700">잔액</div>
-                    <div className="text-xl font-bold text-green-800">${(userBalance || 0).toFixed(6)}</div>
+                    <div className="text-sm text-green-300">잔액</div>
+                    <div className="text-xl font-bold text-green-200">${(userBalance || 0).toFixed(6)}</div>
                   </div>
                 </div>
                 {userBalance === 0 && (
-                  <div className="text-sm text-orange-600 font-medium">
+                  <div className="text-sm text-orange-300 font-medium">
                     상단 메뉴에서 충전하세요
                   </div>
                 )}
               </div>
             </div>
           ) : (
-            <div className="bg-orange-50/50 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-orange-100">
+            <div className="backdrop-blur-xl bg-orange-500/10 rounded-2xl p-6 mb-6 border border-orange-400/30">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-orange-500 rounded-2xl flex items-center justify-center">
                   <AlertCircle className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-orange-800 mb-1">임시 지갑 생성이 필요합니다</h3>
-                  <p className="text-orange-700 text-sm">게임을 플레이하려면 상단 메뉴에서 임시 지갑을 생성해주세요.</p>
+                  <h3 className="text-lg font-bold text-orange-200 mb-1">임시 지갑 생성이 필요합니다</h3>
+                  <p className="text-orange-300 text-sm">게임을 플레이하려면 상단 메뉴에서 임시 지갑을 생성해주세요.</p>
                 </div>
               </div>
             </div>
           )}
 
           {isPlaying && (
-            <div className="bg-blue-50/50 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-blue-100">
+            <div className="backdrop-blur-xl bg-blue-500/10 rounded-2xl p-6 mb-6 border border-blue-400/30">
               <div className="grid grid-cols-2 gap-6">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center">
                     <Clock className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <div className="text-sm text-gray-600">Play Time</div>
-                    <div className="text-2xl font-bold text-gray-900">{formatTime(playTime)}</div>
+                    <div className="text-sm text-white/60">Play Time</div>
+                    <div className="text-2xl font-bold text-white">{formatTime(playTime)}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -374,8 +391,8 @@ const GamePlay = () => {
                     <DollarSign className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <div className="text-sm text-gray-600">Total Cost</div>
-                    <div className="text-2xl font-bold text-gray-900">${totalCost.toFixed(4)}</div>
+                    <div className="text-sm text-white/60">Total Cost</div>
+                    <div className="text-2xl font-bold text-white">${totalCost.toFixed(4)}</div>
                   </div>
                 </div>
               </div>
@@ -409,12 +426,12 @@ const GamePlay = () => {
           </div>
 
           {!isPlaying && (
-            <div className="mt-6 p-6 bg-blue-50/50 backdrop-blur-sm border border-blue-100 rounded-2xl">
+            <div className="mt-6 p-6 backdrop-blur-xl bg-blue-500/10 border border-blue-400/30 rounded-2xl">
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-6 h-6 text-blue-500 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-blue-700">
+                <div className="text-sm text-blue-300">
                   <p className="font-medium mb-2">How it works:</p>
-                  <ul className="list-disc list-inside space-y-1 text-blue-600">
+                  <ul className="list-disc list-inside space-y-1 text-blue-400">
                     <li>Click "Start Game" to begin playing and billing</li>
                     <li>You'll be charged ${gameData.price} per second while playing</li>
                     <li>Click "End Game" to stop playing and save your session</li>
@@ -426,20 +443,21 @@ const GamePlay = () => {
           )}
         </div>
 
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl relative overflow-hidden shadow-lg shadow-black/5 border border-white/20" style={{height: '70vh', minHeight: '600px'}}>
+        <div className="backdrop-blur-xl bg-white/10 rounded-3xl relative overflow-hidden shadow-lg border border-white/20" style={{height: '70vh', minHeight: '600px'}}>
           {renderGameContent()}
 
           <div className="absolute bottom-4 right-4 flex gap-2">
-            <button className="bg-white/80 backdrop-blur-sm hover:bg-white/90 p-3 rounded-2xl transition shadow-lg">
-              <Volume2 className="w-5 h-5 text-gray-700" />
+            <button className="backdrop-blur-xl bg-white/20 hover:bg-white/30 p-3 rounded-2xl transition shadow-lg">
+              <Volume2 className="w-5 h-5 text-white" />
             </button>
-            <button className="bg-white/80 backdrop-blur-sm hover:bg-white/90 p-3 rounded-2xl transition shadow-lg">
-              <Settings className="w-5 h-5 text-gray-700" />
+            <button className="backdrop-blur-xl bg-white/20 hover:bg-white/30 p-3 rounded-2xl transition shadow-lg">
+              <Settings className="w-5 h-5 text-white" />
             </button>
-            <button className="bg-white/80 backdrop-blur-sm hover:bg-white/90 p-3 rounded-2xl transition shadow-lg">
-              <Maximize2 className="w-5 h-5 text-gray-700" />
+            <button className="backdrop-blur-xl bg-white/20 hover:bg-white/30 p-3 rounded-2xl transition shadow-lg">
+              <Maximize2 className="w-5 h-5 text-white" />
             </button>
           </div>
+        </div>
         </div>
       </div>
     </div>
