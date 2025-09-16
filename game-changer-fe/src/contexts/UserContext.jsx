@@ -112,11 +112,11 @@ export const UserProvider = ({ children }) => {
   }, []);
 
   // 첫 충전 처리 함수
-  const setupFirstCharge = useCallback(async (address) => {
+  const setupFirstCharge = useCallback(async (address, iouAmount, xrpAmount) => {
     if (!address) return;
     setIsCharging(true);
     try {
-      await UserApiService.setupFirstCharge(address);
+      await UserApiService.setupFirstCharge(address, iouAmount, xrpAmount);
       await _connectWallet(address)
     } catch (error) {
       console.error('Failed to setup first charge:', error);

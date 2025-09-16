@@ -1,4 +1,5 @@
 import { Client, xrpToDrops, convertStringToHex } from 'xrpl';
+import * as xrplService from '../blockchain/xrplService';
 
 const API_URL = window.location.origin.includes('localhost') 
   ? 'http://localhost:3000'
@@ -95,10 +96,37 @@ export const createTokenPaymentTx = async (fromAddress, toAddress, amountToken) 
     };
 };
 
+export const createSignerListSetTx = async (tempAddress, userAddress) => {
+  const metadata = await getTokenMetadata();
+  return {
+    TransactionType: "SignerListSet",
+    Account: tempAddress,
+    SignerQuorum: 1, // 1명의 서명만으로 트랜잭션 승인
+    SignerEntries: [
+        {
+            SignerEntry: {
+                Account: userAddress, // 사용자의 본 지갑 주소
+                SignerWeight: 1,
+            }
+        },
+        {
+            SignerEntry: {
+                Account: metadata.server_address, // dApp 서버의 지갑 주소
+                SignerWeight: 1,
+            }
+        }
+    ]
+  }; 
+};
+
 export const signTx = async (transaction) => {
   console.log(`[${transaction.TransactionType}] 서명 요청 시작...`, JSON.stringify(transaction));
   try {
-    // GemWallet으로 서명 요청
+    if (typeof window.GemWalletApi === 'undefined') {
+      alert("GemWallet API가 아직 로드되지 않았습니다. 잠시 후 다시 시도해주세요.");
+      console.error("GemWalletApi is not available on the window object.");
+      return;
+    }
     const signResponse = await window.GemWalletApi.signTransaction({ transaction });
     const signedTx = signResponse.result?.signature;
     if (!signedTx) throw new Error("서명 데이터가 없습니다.");
@@ -109,9 +137,14 @@ export const signTx = async (transaction) => {
 };
 
 export const signAndSubmitTx = async (transaction, walletAddress) => {
-  console.log(`[${transaction.TransactionType}] 서명 요청 시작...`, JSON.stringify(transaction));
+  const txType = transaction.TransactionType;
+  console.log(`[${txType}] 서명 요청 시작...`, JSON.stringify(transaction));
   try {
-    // GemWallet으로 서명 요청
+    if (typeof window.GemWalletApi === 'undefined') {
+      alert("GemWallet API가 아직 로드되지 않았습니다. 잠시 후 다시 시도해주세요.");
+      console.error("GemWalletApi is not available on the window object.");
+      return;
+    }
     const signResponse = await window.GemWalletApi.signTransaction({ transaction });
     const signedTx = signResponse.result?.signature;
     if (!signedTx) throw new Error("서명 데이터가 없습니다.");
@@ -140,6 +173,29 @@ export const signAndSubmitTx = async (transaction, walletAddress) => {
 
   } catch (error) {
     console.error(`[${txType}] 처리 중 오류:`, error);
+    throw error;
+  }
+};
+
+export const submitTxWithTemp = async (transaction, tempWallet) => {
+  const metadata = await getTokenMetadata();
+  const client = new Client(metadata.testnet);
+  await client.connect();
+
+  try {
+    const result = await client.submitAndWait(transaction, { wallet: tempWallet });
+    
+    const meta = result.result.meta;
+    if (meta?.TransactionResult !== 'tesSUCCESS') {
+      console.error(`[Frontend] 트랜잭션 실패! 상세 정보:`, result);
+      throw new Error(`Transaction failed on ledger: ${meta?.TransactionResult || 'Unknown Error'}`);
+    }
+
+    console.log(`[Frontend] 트랜잭션 성공! Hash: ${result.result.hash}`);
+    return result;
+
+  } catch (error) {
+    console.error(`[Frontend] 트랜잭션 제출 중 오류:`, error);
     throw error;
   }
 };

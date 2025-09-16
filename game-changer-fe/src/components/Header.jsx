@@ -13,6 +13,8 @@ import { isInstalled, getAddress, getNetwork } from '@gemwallet/api';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useUser } from '../contexts/UserContext';
 import { useTranslation } from '../hooks/useTranslation';
+import ChargeModal from './ChargeModel'
+
 
 const Header = () => {
   // Hooks
@@ -37,6 +39,24 @@ const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isGemWalletInstalled, setIsGemWalletInstalled] = useState(null);
+  const [isChargeModalOpen, setIsChargeModalOpen] = useState(false);
+
+  const handleOpenChargeModal = () => {
+    setIsChargeModalOpen(true);
+  };
+
+  const handleConfirmCharge = async (iouAmount, xrpAmount) => {
+    try {
+      // 이제 setupFirstCharge 함수가 알아서 isCharging 상태를 true/false로 변경해줍니다.
+      await setupFirstCharge(walletAddress, iouAmount, xrpAmount);
+      alert('임시 지갑 생성 및 충전이 완료되었습니다!');
+      setIsChargeModalOpen(false);
+    } catch (error) {
+      console.error('첫 충전 실패:', error);
+      alert(`첫 충전 실패: ${error.message}`);
+    }
+    // 여기서 더 이상 setIsCharging(false)를 호출할 필요가 없습니다.
+  };
 
   // Effects
   useEffect(() => {
@@ -210,9 +230,9 @@ const Header = () => {
                 ) : (
                   // --- Case 2: 아직 첫 충전을 안 한 사용자 ---
                   <button
-                    onClick={handleFirstCharge}
+                    onClick={handleOpenChargeModal}
                     disabled={isCharging}
-                    className={`backdrop-blur-xl bg-gradient-to-r from-blue-500/30 to-purple-500/30 hover:from-blue-500/40 hover:to-purple-500/40 border border-blue-400/30 text-white px-3 py-2 rounded-2xl font-medium transition-all duration-200 flex items-center gap-2 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-105 text-sm ${
+                    className={`bg-orange-600/90 hover:bg-orange-700 backdrop-blur-sm text-white px-3 py-2 rounded-2xl font-medium transition-all duration-200 flex items-center gap-2 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-105 text-sm ${
                       isCharging ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
@@ -301,6 +321,12 @@ const Header = () => {
           </div>
         </div>
       </div>
+      <ChargeModal
+        isOpen={isChargeModalOpen}
+        onClose={() => setIsChargeModalOpen(false)}
+        onConfirm={handleConfirmCharge}
+        isCharging={isCharging}
+      />
     </header>
   );
 };
