@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Wallet, Clock, Play, XCircle, Calendar, TrendingUp, Award, ArrowLeft, Copy, Check } from 'lucide-react';
+import { User, Wallet, Clock, Play, XCircle, Calendar, TrendingUp, Info, Award, ArrowLeft, Copy, Check } from 'lucide-react';
 import { useUser } from '../contexts/UserContext';
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -139,7 +139,6 @@ const MyPage = () => {
               </div>
             </div>
           </div>
-
           <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-8 shadow-xl border border-white/20 hover:scale-105 transition-transform duration-200">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 bg-green-500/20 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-green-400/30">
@@ -149,22 +148,37 @@ const MyPage = () => {
             </div>
             <div className="space-y-4">
               <div>
-                <span className="text-sm font-medium text-white/60">{t('walletAddress')}</span>
+                <span className="text-sm font-medium text-white/60">{t('connectedWallet')}</span>
                 <div className="flex items-center gap-2 mt-1">
-                  <p className="font-mono text-sm text-white truncate">
-                    {walletAddress}
-                  </p>
-                  <button
-                    onClick={handleCopyAddress}
-                    className="text-white/60 hover:text-white transition-colors p-1 rounded hover:bg-white/10"
-                  >
+                  <p className="font-mono text-sm text-white truncate"> {walletAddress}</p>
+                  <button onClick={() => handleCopyAddress(walletAddress)} className="text-white/60 hover:text-white transition-colors p-1 rounded hover:bg-white/10">
                     {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
+              {user?.tempWallet && (
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-medium text-white/60">{t('chargedWallet')}</span>
+                    <div className="relative group flex items-center">
+                      <Info className="w-4 h-4 text-white/50 cursor-pointer" />
+                      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 bg-gray-800 text-white text-xs text-left rounded-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                        {t('chargedWalletTooltip')}
+                        <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-[4px] border-t-gray-800">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="font-mono text-sm text-white truncate">{user.tempWallet}</p>
+                    <button onClick={() => handleCopyAddress(user.tempWallet)} className="text-white/60 hover:text-white transition-colors p-1 rounded hover:bg-white/10">
+                      {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-
           <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-8 shadow-xl border border-white/20 hover:scale-105 transition-transform duration-200">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 bg-purple-500/20 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-purple-400/30">
