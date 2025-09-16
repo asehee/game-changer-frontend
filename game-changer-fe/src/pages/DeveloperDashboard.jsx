@@ -21,6 +21,10 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+const API_BASE_URL = window.location.origin.includes('localhost') 
+  ? 'http://localhost:3000' 
+  : 'http://localhost:3000';
+
 const DeveloperDashboard = () => {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
@@ -59,7 +63,7 @@ const DeveloperDashboard = () => {
 
   const startUploading = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/developers/start-uploading?wallet=${walletAddress}`);
+      const response = await fetch(`${API_BASE_URL}/api/developers/start-uploading?wallet=${walletAddress}`);
       if (response.ok) {
         window.location.reload();
       }
