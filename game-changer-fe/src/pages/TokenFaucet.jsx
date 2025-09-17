@@ -80,15 +80,25 @@ const TokenFaucet = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="p-8 bg-white rounded-xl shadow-lg text-center w-full max-w-lg">
-        <div className="flex justify-center mb-4">
-          <ShieldCheck className="w-12 h-12 text-blue-500" />
-        </div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">토큰 수령 준비</h1>
-        <p className="text-gray-600 mb-6">
-          게임 토큰을 받으려면, 먼저 지갑에서 해당 토큰에 대한 신뢰선(Trustline)을 설정해야 합니다.
-        </p>
+    <div className="min-h-screen relative">
+      {/* Glassmorphism Background */}
+      <div
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('/src/assets/bg.png')`,
+        }}
+      />
+      <div className="bg-black/30 fixed inset-0" />
+      
+      <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
+        <div className="p-8 bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl text-center w-full max-w-lg">
+          <div className="flex justify-center mb-4">
+            <ShieldCheck className="w-12 h-12 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-2">토큰 수령 준비</h1>
+          <p className="text-white/80 mb-6">
+            게임 토큰을 받으려면, 먼저 지갑에서 해당 토큰에 대한 신뢰선(Trustline)을 설정해야 합니다.
+          </p>
         
         {/* 🔥 3. UI 렌더링 로직 단순화 */}
         {!hasTrustline && (
@@ -103,7 +113,7 @@ const TokenFaucet = () => {
         
         {hasTrustline && (
           <div className="mt-4">
-             <p className="text-green-600 mb-4">✅ 신뢰선이 설정되었습니다!</p>
+             <p className="text-green-400 mb-4">✅ 신뢰선이 설정되었습니다!</p>
             <button
               onClick={handleClaimToken}
               disabled={isLoading || faucetClaimed}
@@ -118,17 +128,18 @@ const TokenFaucet = () => {
         )}
     
         <div className="mt-4 min-h-[50px]">
-          {errorMessage && <p className="text-red-600">❌ 오류: {errorMessage}</p>}
+          {errorMessage && <p className="text-red-400">❌ 오류: {errorMessage}</p>}
           {txHash && (
              <a 
               href={`https://testnet.xrpl.org/transactions/${txHash}`} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-xs text-blue-500 underline break-all"
+              className="text-xs text-blue-400 underline break-all hover:text-blue-300 transition-colors"
             >
               신뢰선 설정 영수증 확인
             </a>
           )}
+        </div>
         </div>
       </div>
     </div>
