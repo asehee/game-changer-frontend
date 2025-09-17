@@ -139,8 +139,13 @@ const GameLobby = () => {
       
       {/* Main Content */}
       <div className="relative z-10">
-        <div className="relative mb-16 backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl overflow-hidden p-16 shadow-2xl mx-6 mt-6">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-purple-600/10"></div>
+          <div className="relative mb-16 bg-black/10 border border-white/10 rounded-3xl overflow-hidden p-16 shadow-2xl mx-6 mt-6 backdrop-blur-xl
+            after:content-[''] after:absolute after:inset-0 after:bg-gradient-to-t after:from-black/70 after:to-transparent after:z-0">
+          <div className="absolute top-0 left-0 w-full h-full -z-10">
+            <div className="absolute -top-1/4 -left-1/4 w-[700px] h-[600px] bg-[#0D18E7] rounded-full mix-blend-lighten filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+            <div className="absolute -bottom-1/4 -right-1/4 w-[700px] h-[700px] bg-[#6A0DAD] rounded-full mix-blend-lighten filter blur-3xl opacity-25 animate-blob animation-delay-4000"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#00A1A1] rounded-full mix-blend-lighten filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+          </div>
           <div className="relative z-10 text-center">
             <h1 className="text-7xl font-bold text-white mb-6 tracking-tight">
               {t('welcomeTitle')}
