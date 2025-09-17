@@ -2,6 +2,8 @@ export const translations = {
   ko: {
     // Header
     store: "스토어",
+    earnfee: "리워드 받기",
+    crowdfunding: "크라우드 펀딩",
     library: "라이브러리",
     developer: "개발자",
     connectWallet: "지갑 연결",
@@ -126,6 +128,23 @@ export const translations = {
     totalRevenue: "총 수익",
     activePlayers: "활성 플레이어",
     uploadNewGame: "새 게임 업로드",
+
+    // EarnFees
+    walletRequired: "지갑 연결 필요",
+    connectWalletFirst: "이 기능을 사용하려면 먼저 지갑을 연결해야 합니다.",
+    clickConnectButton: "페이지 상단의 '지갑 연결' 버튼을 눌러주세요.",
+    tempWalletRequired: "임시 지갑 필요",
+    createTempWalletFirst: "보상을 받으려면 먼저 게임 플레이에 사용할 임시 지갑을 생성해야 합니다.",
+    goToFirstCharge: "'첫 충전 시작' 하러 가기",
+    freeFeeCharge: "무료 수수료 충전",
+    watchAdReward: "광고를 시청하면 충전 지갑에 XRP 보상이 지급됩니다.",
+    rewardLimmit: "1일 최대 5회까지 가능",
+    claimingReward: "보상 지급을 요청하는 중입니다...",
+    rewardSuccess: "보상이 성공적으로 지급되었습니다!",
+    rewardFailed: "보상 지급에 실패했습니다.",
+    rewardSent: "수수료용 XRP가 충전 지갑으로 전송되었습니다!",
+    error: "오류",
+    videoLoading: "동영상 로딩 중...",
     
     // Common
     loading: "로딩 중...",
@@ -142,6 +161,8 @@ export const translations = {
   en: {
     // Header
     store: "Store",
+    earnfee: "Earn Fees",
+    crowdfunding: "Funding",
     library: "Library",
     developer: "Developer",
     connectWallet: "Connect Wallet",
@@ -268,6 +289,23 @@ export const translations = {
     activePlayers: "Active Players",
     uploadNewGame: "Upload New Game",
     
+    // EarnFees
+    walletRequired: "Wallet Connection Required",
+    connectWalletFirst: "You need to connect your wallet to use this feature.",
+    clickConnectButton: "Please click the 'Connect Wallet' button at the top of the page.",
+    tempWalletRequired: "Temporary Wallet Required",
+    createTempWalletFirst: "You need to create a temporary wallet for game play before receiving rewards.",
+    goToFirstCharge: "Go to 'Start First Charge'",
+    freeFeeCharge: "Free Fee Charge",
+    watchAdReward: "Watching ads will reward your Charged Wallet with XRP.",
+    rewardLimmit: "Up to 5 times per day",
+    claimingReward: "Requesting reward...",
+    rewardSuccess: "Reward successfully sent!",
+    rewardFailed: "Failed to send reward.",
+    rewardSent: "Charged XRP has been sent to your wallet!",
+    videoLoading: "Video loading...",
+    playVideo: "Play Video",
+
     // Common
     loading: "Loading...",
     error: "An error occurred",

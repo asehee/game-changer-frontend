@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   User, Wallet, ChevronDown, Gamepad2, 
-  Library, Users, TrendingUp, Menu, 
+  Pickaxe, HandCoins, FlaskConical, Users, TrendingUp, Menu, 
   X, Languages, DollarSign, CreditCard 
 } from 'lucide-react';
 import { formatAddress } from '../utils';
@@ -131,16 +131,6 @@ const Header = () => {
     }
   };
 
-  const handleFirstCharge = async () => {
-    try {
-      await setupFirstCharge(walletAddress);
-      alert(t('chargeComplete'));
-    } catch (error) {
-      console.error(t('chargeError') + ': ', error);
-      alert(t('chargeError') + ': '+`${error.message}`);
-    }
-  };
-
   return (
     <header className="bg-black/50 backdrop-blur-xl shadow-lg shadow-black/20 border-b border-white/10 sticky top-0 z-50">
       <div className="container mx-auto px-4">
@@ -157,18 +147,18 @@ const Header = () => {
             
             <nav className="hidden md:flex space-x-2">
               <Link 
-                to="/" 
+                to="/earnfees" 
                 className="px-4 py-2.5 rounded-xl hover:bg-white/10 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-white hover:text-blue-400 font-medium"
               >
-                <Library className="w-4 h-4" />
-                {t('store')}
+                <Pickaxe className="w-4 h-4" />
+                {t('earnfee')}
               </Link>
               <Link 
                 to="/mypage" 
                 className="px-4 py-2.5 rounded-xl hover:bg-white/10 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-white hover:text-blue-400 font-medium"
               >
-                <User className="w-4 h-4" />
-                {t('library')}
+                <HandCoins className="w-4 h-4" />
+                {t('crowdfunding')}
               </Link>
               <Link 
                 to="/developer" 
@@ -178,9 +168,10 @@ const Header = () => {
                 {t('developer')}
               </Link>
               <Link 
-                to="/test" 
+                to="/tokenfaucet" 
                 className="px-4 py-2.5 rounded-xl hover:bg-white/10 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-white hover:text-blue-400 font-medium"
               >
+                <FlaskConical className="w-4 h-4" />
                 {t('tokenFaucet')}
               </Link>
             </nav>
