@@ -79,6 +79,31 @@ const GameLobby = () => {
     }
   }, []);
 
+  // Handle ESC key for modals
+  useEffect(() => {
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape') {
+        if (showFundingModal) {
+          setShowFundingModal(false);
+          setFundingAmount('');
+          setSelectedProject(null);
+        }
+        if (showVotingModal) {
+          setShowVotingModal(false);
+          setVoteType(null);
+          setSelectedProject(null);
+        }
+      }
+    };
+
+    if (showFundingModal || showVotingModal) {
+      document.addEventListener('keydown', handleEscapeKey);
+      return () => {
+        document.removeEventListener('keydown', handleEscapeKey);
+      };
+    }
+  }, [showFundingModal, showVotingModal]);
+
   useEffect(() => {
     const fetchGames = async () => {
       try {
@@ -331,7 +356,7 @@ const GameLobby = () => {
               View All <ChevronRight className="w-5 h-5" />
             </button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 lg:gap-10">
             {crowdfundingProjects.map(project => (
               <div key={project.id} className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl overflow-hidden shadow-2xl hover:scale-105 transition-all duration-300 group">
                 <div className="h-48 relative overflow-hidden">
@@ -341,12 +366,12 @@ const GameLobby = () => {
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  <div className="absolute bottom-4 left-4 text-white">
-                    <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-                    <p className="text-white/90 text-sm">{project.description}</p>
+                  <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 text-white">
+                    <h3 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2">{project.title}</h3>
+                    <p className="text-white/90 text-xs sm:text-sm">{project.description}</p>
                   </div>
                 </div>
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <div className="mb-4">
                     <div className="flex justify-between text-white/80 text-sm mb-2">
                       <span>{t('progress')}</span>
@@ -396,9 +421,9 @@ const GameLobby = () => {
               View All <ChevronRight className="w-5 h-5" />
             </button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 lg:gap-10">
             {votingProjects.map(project => (
-              <div key={project.id} className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl hover:scale-105 transition-all duration-300">
+              <div key={project.id} className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-4 sm:p-6 shadow-2xl hover:scale-105 transition-all duration-300">
                 <div className="mb-6">
                   <h3 className="text-xl font-bold text-white mb-2">{project.title}</h3>
                   <p className="text-white/80 text-sm mb-4">{project.description}</p>
@@ -442,8 +467,8 @@ const GameLobby = () => {
       {/* Funding Modal */}
       {showFundingModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 w-full max-w-md shadow-2xl">
-            <h3 className="text-2xl font-bold text-white mb-4">{t('fundingProject')}</h3>
+          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">{t('fundingProject')}</h3>
             {selectedProject && (
               <>
                 <div className="mb-6">
@@ -464,17 +489,17 @@ const GameLobby = () => {
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={() => setShowFundingModal(false)}
-                    className="flex-1 px-6 py-3 bg-white/10 border border-white/20 text-white rounded-xl font-semibold hover:bg-white/20 transition-all duration-200"
+                    className="flex-1 px-4 sm:px-6 py-3 bg-white/10 border border-white/20 text-white rounded-xl font-semibold hover:bg-white/20 transition-all duration-200"
                   >
 {t('cancel')}
                   </button>
                   <button
                     onClick={handleFundingSubmit}
                     disabled={!fundingAmount}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-4 sm:px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {t('confirm')}
                   </button>
@@ -488,8 +513,8 @@ const GameLobby = () => {
       {/* Voting Modal */}
       {showVotingModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 w-full max-w-md shadow-2xl">
-            <h3 className="text-2xl font-bold text-white mb-4">{t('votingFor')}</h3>
+          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">{t('votingFor')}</h3>
             {selectedProject && (
               <>
                 <div className="mb-6">
@@ -500,7 +525,7 @@ const GameLobby = () => {
                 <div className="mb-6 space-y-3">
                   <button
                     onClick={() => setVoteType('agree')}
-                    className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${
+                    className={`w-full flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 ${
                       voteType === 'agree'
                         ? 'border-green-500 bg-green-500/20 text-green-400'
                         : 'border-white/20 bg-white/5 text-white hover:bg-white/10'
@@ -514,7 +539,7 @@ const GameLobby = () => {
                   </button>
                   <button
                     onClick={() => setVoteType('disagree')}
-                    className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${
+                    className={`w-full flex items-center gap-3 p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 ${
                       voteType === 'disagree'
                         ? 'border-red-500 bg-red-500/20 text-red-400'
                         : 'border-white/20 bg-white/5 text-white hover:bg-white/10'
@@ -527,17 +552,17 @@ const GameLobby = () => {
                     </span>
                   </button>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={() => setShowVotingModal(false)}
-                    className="flex-1 px-6 py-3 bg-white/10 border border-white/20 text-white rounded-xl font-semibold hover:bg-white/20 transition-all duration-200"
+                    className="flex-1 px-4 sm:px-6 py-3 bg-white/10 border border-white/20 text-white rounded-xl font-semibold hover:bg-white/20 transition-all duration-200"
                   >
 {t('cancel')}
                   </button>
                   <button
                     onClick={handleVotingSubmit}
                     disabled={!voteType}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-4 sm:px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {t('confirm')}
                   </button>
