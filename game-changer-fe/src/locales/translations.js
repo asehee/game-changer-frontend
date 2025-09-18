@@ -69,6 +69,20 @@ export const translations = {
     gameInstructions: "게임 설명",
     chargeInfo: "초당 요금이 부과됩니다",
     
+    // TokenFaucet
+    trustlineError: "신뢰선 확인 중 오류가 발생했습니다.",
+    faucetTitle: "토큰 수령 준비",
+    faucetDescription: "게임 토큰을 받으려면, 먼저 지갑에서 해당 토큰에 대한 신뢰선(Trustline)을 설정해야 합니다.",
+    processing: "처리 중...",
+    stepSetTrustline: "1. 신뢰선 설정하기",
+    trustlineSuccess: "✅ 신뢰선이 설정되었습니다!",
+    tokenClaimed: "✅ 토큰 수령 완료!",
+    claimFailed: "토큰 지급에 실패했습니다.",
+    tokenProcessing: "토큰 지급 중...",
+    stepClaimToken: "2. 테스트 토큰 받기",
+    errorPrefix: "❌ 오류:",
+    txReceipt: "신뢰선 설정 영수증 확인",
+
     // MyPage
     myLibrary: "내 라이브러리",
     recentlyPlayed: "최근 플레이",
@@ -259,6 +273,20 @@ export const translations = {
     gameInstructions: "Game Instructions",
     chargeInfo: "You'll be charged per second while playing",
     
+    // TokenFaucet
+    trustlineError: "An error occurred while checking trustline.",
+    faucetTitle: "Ready to Receive Tokens",
+    faucetDescription: "To receive game tokens, you must first set up a trustline for the token in your wallet.",
+    processing: "Processing...",
+    stepSetTrustline: "1. Set Trustline",
+    claimFailed: "Failed to claim token.",
+    trustlineSuccess: "✅ Trustline has been set!",
+    tokenClaimed: "✅ Token received!",
+    tokenProcessing: "Claiming token...",
+    stepClaimToken: "2. Claim Test Token",
+    errorPrefix: "❌ Error:",
+    txReceipt: "Check Trustline Transaction Receipt",
+
     // MyPage
     myLibrary: "My Library",
     recentlyPlayed: "Recently Played",

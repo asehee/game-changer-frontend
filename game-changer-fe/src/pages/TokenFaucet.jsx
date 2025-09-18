@@ -2,12 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '../contexts/UserContext';
 import { ShieldCheck, HelpCircle, Gift } from 'lucide-react';
 import * as xrplService from '../blockchain/xrplService';
+import { useTranslation } from '../hooks/useTranslation';
 
 const API_URL = window.location.origin.includes('localhost') 
   ? 'http://localhost:3000'
   : 'http://localhost:3000';
 
 const TokenFaucet = () => {
+  const { t } = useTranslation();
   const { walletAddress, isConnected, getTempBalance } = useUser();
   const [hasTrustline, setHasTrustline] = useState(null); // null: 확인 전, true: 설정됨, false: 설정 안됨
   const [faucetClaimed, setFaucetClaimed] = useState(false);
@@ -22,13 +24,12 @@ const TokenFaucet = () => {
       const result = await xrplService.checkTrustline(walletAddress);
       setHasTrustline(result);
     } catch (error) {
-      setErrorMessage('신뢰선 확인 중 오류가 발생했습니다.');
+      setErrorMessage(t('trustlineError'));
     } finally {
       setIsLoading(false);
     }
   }, [walletAddress]);
 
-  // 지갑이 연결되면 신뢰선 상태를 자동으로 확인합니다.
   useEffect(() => {
     checkUserTrustline();
   }, [checkUserTrustline]);
@@ -58,8 +59,6 @@ const TokenFaucet = () => {
     setErrorMessage('');
     
     try {
-      // Faucet API 호출 로직은 여전히 컴포넌트에 남아있을 수 있습니다.
-      // 또는 xrplService로 옮겨도 좋습니다.
       const response = await fetch(`${API_URL}/api/chain/tokenfaucet`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -67,7 +66,7 @@ const TokenFaucet = () => {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || '토큰 지급에 실패했습니다.');
+        throw new Error(errorData.message || t('claimFailed'));
       }
 
       setFaucetClaimed(true);
@@ -95,9 +94,9 @@ const TokenFaucet = () => {
           <div className="flex justify-center mb-4">
             <ShieldCheck className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">토큰 수령 준비</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">{t('faucetTitle')}</h1>
           <p className="text-white/80 mb-6">
-            게임 토큰을 받으려면, 먼저 지갑에서 해당 토큰에 대한 신뢰선(Trustline)을 설정해야 합니다.
+            {t('faucetDescription')}
           </p>
         
         {/* 🔥 3. UI 렌더링 로직 단순화 */}
@@ -107,13 +106,13 @@ const TokenFaucet = () => {
             disabled={!isConnected || isLoading}
             className="w-full px-6 py-3 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-gray-400"
           >
-            {isLoading ? '처리 중...' : '1. 신뢰선 설정하기'}
+            {isLoading ? t('processing') : t('stepSetTrustline')}
           </button>
         )}
         
         {hasTrustline && (
           <div className="mt-4">
-             <p className="text-green-400 mb-4">✅ 신뢰선이 설정되었습니다!</p>
+             <p className="text-green-400 mb-4">{t('trustlineSuccess')}</p>
             <button
               onClick={handleClaimToken}
               disabled={isLoading || faucetClaimed}
@@ -121,14 +120,14 @@ const TokenFaucet = () => {
             >
               <div className="flex items-center justify-center gap-2">
                 <Gift className="w-5 h-5"/>
-                <span>{faucetClaimed ? '✅ 토큰 수령 완료!' : isLoading ? '토큰 지급 중...' : '2. 테스트 토큰 받기'}</span>
+                <span>{faucetClaimed ? t('tokenClaimed') : isLoading ? t('tokenProcessing') : t('stepClaimToken')}</span>
               </div>
             </button>
           </div>
         )}
     
         <div className="mt-4 min-h-[50px]">
-          {errorMessage && <p className="text-red-400">❌ 오류: {errorMessage}</p>}
+          {errorMessage && <p className="text-red-400">{t('errorPrefix') + errorMessage}</p>}
           {txHash && (
              <a 
               href={`https://testnet.xrpl.org/transactions/${txHash}`} 
@@ -136,7 +135,7 @@ const TokenFaucet = () => {
               rel="noopener noreferrer"
               className="text-xs text-blue-400 underline break-all hover:text-blue-300 transition-colors"
             >
-              신뢰선 설정 영수증 확인
+              {t('txReceipt')}
             </a>
           )}
         </div>
