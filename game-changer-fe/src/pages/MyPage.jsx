@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { User, Wallet, Clock, Play, XCircle, Calendar, TrendingUp, Info, Award, ArrowLeft, Copy, Check } from 'lucide-react';
 import { useUser } from '../contexts/UserContext';
 import { useTranslation } from '../hooks/useTranslation';
+import { formatAddress } from '../utils';
 
 const MyPage = () => {
-  const [copied, setCopied] = useState(false);
+  const [copied1, setCopied1] = useState(false);
+  const [copied2, setCopied2] = useState(false);
   const { user, walletAddress, isLoggedIn, nickname, loading, disconnectWallet } = useUser();
   const { t } = useTranslation();
 
@@ -15,15 +17,26 @@ const MyPage = () => {
     }
   }, [loading, isLoggedIn]);
 
-  const handleCopyAddress = async () => {
+  const handleCopyAddress1 = async (addr) => {
     try {
-      await navigator.clipboard.writeText(walletAddress);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(addr);
+      setCopied1(true);
+      setTimeout(() => setCopied1(false), 2000);
     } catch (error) {
       console.error('Failed to copy address:', error);
     }
   };
+
+  const handleCopyAddress2 = async (addr) => {
+    try {
+      await navigator.clipboard.writeText(addr);
+      setCopied2(true);
+      setTimeout(() => setCopied2(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy address:', error);
+    }
+  };
+
 
   const handleDisconnect = () => {
     disconnectWallet();
@@ -84,12 +97,12 @@ const MyPage = () => {
                   <p className="text-xl text-white/80 mb-4 leading-relaxed">{t('gameExploreAndNFT')}</p>
                   <div className="flex items-center gap-2 text-white/80 mb-2">
                     <Wallet className="w-5 h-5" />
-                    <span className="font-mono text-lg">{walletAddress.slice(0, 20)}...</span>
+                    <span className="font-mono text-lg">{formatAddress(user.wallet,20,8)}</span>
                     <button
-                      onClick={handleCopyAddress}
+                      onClick={handleCopyAddress1}
                       className="text-white/80 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/10"
                     >
-                      {copied ? <Check className="w-5 h-5 text-green-300" /> : <Copy className="w-5 h-5" />}
+                      {copied1 ? <Check className="w-5 h-5 text-green-300" /> : <Copy className="w-5 h-5" />}
                     </button>
                   </div>
                   <div className="flex items-center gap-6 text-sm text-white/60">
@@ -150,9 +163,9 @@ const MyPage = () => {
               <div>
                 <span className="text-sm font-medium text-white/60">{t('connectedWallet')}</span>
                 <div className="flex items-center gap-2 mt-1">
-                  <p className="font-mono text-sm text-white truncate"> {walletAddress}</p>
-                  <button onClick={() => handleCopyAddress(walletAddress)} className="text-white/60 hover:text-white transition-colors p-1 rounded hover:bg-white/10">
-                    {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                  <p className="font-mono text-sm text-white truncate"> {formatAddress(user.wallet,20,8)}</p>
+                  <button onClick={() => handleCopyAddress1(walletAddress)} className="text-white/60 hover:text-white transition-colors p-1 rounded hover:bg-white/10">
+                    {copied1 ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
@@ -170,9 +183,9 @@ const MyPage = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 mt-1">
-                    <p className="font-mono text-sm text-white truncate">{user.tempWallet}</p>
-                    <button onClick={() => handleCopyAddress(user.tempWallet)} className="text-white/60 hover:text-white transition-colors p-1 rounded hover:bg-white/10">
-                      {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                    <p className="font-mono text-sm text-white truncate">{formatAddress(user.tempWallet,20,8)}</p>
+                    <button onClick={() => handleCopyAddress2(user.tempWallet)} className="text-white/60 hover:text-white transition-colors p-1 rounded hover:bg-white/10">
+                      {copied2 ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
