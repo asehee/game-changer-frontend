@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, TrendingUp, Award, Sparkles, Filter, ChevronRight } from 'lucide-react';
+import { Search, TrendingUp, Award, Sparkles, Filter, ChevronRight, DollarSign, Clock, Vote, ThumbsUp, ThumbsDown, Users } from 'lucide-react';
 import GameCard from '../components/GameCard';
 import { useTranslation } from '../hooks/useTranslation';
 import axios from 'axios';
@@ -15,6 +15,56 @@ const GameLobby = () => {
   const [loading, setLoading] = useState(false);
   const [genres, setGenres] = useState(['all']);
   const { t } = useTranslation();
+
+  // Modal states
+  const [showFundingModal, setShowFundingModal] = useState(false);
+  const [showVotingModal, setShowVotingModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [fundingAmount, setFundingAmount] = useState('');
+  const [voteType, setVoteType] = useState(null); // 'agree' or 'disagree'
+
+  // Mock data for crowdfunding and voting
+  const crowdfundingProjects = [
+    {
+      id: 1,
+      title: "Virtual Reality RPG Adventure",
+      description: "Epic fantasy RPG with VR support and multiplayer raids",
+      goal: 100000,
+      raised: 75000,
+      daysLeft: 12,
+      image: "/src/assets/game_images/fantasy1.png"
+    },
+    {
+      id: 2,
+      title: "Blockchain Strategy Game",
+      description: "Real-time strategy game with NFT units and token economy",
+      goal: 50000,
+      raised: 32000,
+      daysLeft: 8,
+      image: "/src/assets/game_images/shooting1.png"
+    }
+  ];
+
+  const votingProjects = [
+    {
+      id: 1,
+      title: "Add Dark Mode to Platform",
+      description: "Community vote on implementing dark mode theme",
+      agree: { count: 120, percentage: 80 },
+      disagree: { count: 30, percentage: 20 },
+      daysLeft: 5,
+      totalVotes: 150
+    },
+    {
+      id: 2,
+      title: "New Tournament System",
+      description: "Vote on proposed tournament and ranking system",
+      agree: { count: 85, percentage: 63 },
+      disagree: { count: 50, percentage: 37 },
+      daysLeft: 3,
+      totalVotes: 135
+    }
+  ];
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -96,6 +146,35 @@ const GameLobby = () => {
     'puzzle': t('puzzle'),
     'horror': t('horror'),
     'racing': t('racing')
+  };
+
+  // Modal handler functions
+  const handleFundingClick = (project) => {
+    setSelectedProject(project);
+    setShowFundingModal(true);
+  };
+
+  const handleVotingClick = (project) => {
+    setSelectedProject(project);
+    setShowVotingModal(true);
+  };
+
+  const handleFundingSubmit = () => {
+    if (fundingAmount && selectedProject) {
+      alert(`Funded ${fundingAmount} to ${selectedProject.title}`);
+      setShowFundingModal(false);
+      setFundingAmount('');
+      setSelectedProject(null);
+    }
+  };
+
+  const handleVotingSubmit = () => {
+    if (voteType && selectedProject) {
+      alert(`Voted ${voteType} for ${selectedProject.title}`);
+      setShowVotingModal(false);
+      setVoteType(null);
+      setSelectedProject(null);
+    }
   };
 
   // 게임 필터링 함수
@@ -226,26 +305,235 @@ const GameLobby = () => {
           </div>
         </section>
 
-        <section>
+        {/* Crowdfunding Section */}
+        <section className="mb-20">
           <div className="flex items-center justify-between mb-10">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl flex items-center justify-center shadow-lg shadow-purple-500/25">
-                <Sparkles className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl flex items-center justify-center shadow-lg shadow-green-500/25">
+                <DollarSign className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-4xl font-bold text-white tracking-tight">{t('newReleases')}</h2>
+              <h2 className="text-4xl font-bold text-white tracking-tight">{t('crowdfundingSection')}</h2>
             </div>
             <button className="text-white/80 hover:text-white flex items-center gap-2 font-medium text-lg hover:scale-105 transition-all duration-200">
               View All <ChevronRight className="w-5 h-5" />
             </button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-            {games.new.map(game => (
-              <GameCard key={game.id} game={game} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            {crowdfundingProjects.map(project => (
+              <div key={project.id} className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl overflow-hidden shadow-2xl hover:scale-105 transition-all duration-300 group">
+                <div className="h-48 relative overflow-hidden">
+                  <img 
+                    src={project.image} 
+                    alt={project.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  <div className="absolute bottom-4 left-4 text-white">
+                    <h3 className="text-xl font-bold mb-2">{project.title}</h3>
+                    <p className="text-white/90 text-sm">{project.description}</p>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <div className="mb-4">
+                    <div className="flex justify-between text-white/80 text-sm mb-2">
+                      <span>{t('progress')}</span>
+                      <span>{Math.round((project.raised / project.goal) * 100)}%</span>
+                    </div>
+                    <div className="w-full bg-white/20 rounded-full h-3 mb-3">
+                      <div 
+                        className="bg-gradient-to-r from-green-500 to-emerald-600 h-3 rounded-full transition-all duration-500"
+                        style={{ width: `${(project.raised / project.goal) * 100}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-2xl font-bold text-white">${project.raised.toLocaleString()}</p>
+                        <p className="text-white/60 text-sm">{t('goal')}: ${project.goal.toLocaleString()}</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center gap-1 text-white/80">
+                          <Clock className="w-4 h-4" />
+                          <span className="text-sm">{project.daysLeft} {t('daysLeft')}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleFundingClick(project)}
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 rounded-2xl transition-all duration-200 hover:scale-105 shadow-lg"
+                  >
+{t('fund')}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Voting Section */}
+        <section>
+          <div className="flex items-center justify-between mb-10">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl flex items-center justify-center shadow-lg shadow-purple-500/25">
+                <Vote className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-4xl font-bold text-white tracking-tight">{t('votingSection')}</h2>
+            </div>
+            <button className="text-white/80 hover:text-white flex items-center gap-2 font-medium text-lg hover:scale-105 transition-all duration-200">
+              View All <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            {votingProjects.map(project => (
+              <div key={project.id} className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl hover:scale-105 transition-all duration-300">
+                <div className="mb-6">
+                  <h3 className="text-xl font-bold text-white mb-2">{project.title}</h3>
+                  <p className="text-white/80 text-sm mb-4">{project.description}</p>
+                  <div className="flex items-center gap-1 text-white/60 text-sm">
+                    <Clock className="w-4 h-4" />
+                    <span>{project.daysLeft} {t('daysLeft')}</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <ThumbsUp className="w-4 h-4 text-green-400" />
+                      <span className="text-white font-medium">{t('agree')}</span>
+                    </div>
+                    <span className="text-green-400 font-bold">{project?.agree?.count || 0} {t('votes')} ({project?.agree?.percentage || 0}%)</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <ThumbsDown className="w-4 h-4 text-red-400" />
+                      <span className="text-white font-medium">{t('disagree')}</span>
+                    </div>
+                    <span className="text-red-400 font-bold">{project?.disagree?.count || 0} {t('votes')} ({project?.disagree?.percentage || 0}%)</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => handleVotingClick(project)}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 rounded-2xl transition-all duration-200 hover:scale-105 shadow-lg"
+                >
+{t('vote')}
+                </button>
+              </div>
             ))}
           </div>
         </section>
       </div>
       </div>
+
+      {/* Funding Modal */}
+      {showFundingModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 w-full max-w-md shadow-2xl">
+            <h3 className="text-2xl font-bold text-white mb-4">{t('fundingProject')}</h3>
+            {selectedProject && (
+              <>
+                <div className="mb-6">
+                  <h4 className="text-lg font-semibold text-white mb-2">{selectedProject.title}</h4>
+                  <div className="text-white/60 text-sm space-y-1">
+                    <p>{t('goal')}: ${selectedProject.goal.toLocaleString()}</p>
+                    <p>{t('current')}: ${selectedProject.raised.toLocaleString()}</p>
+                    <p>{t('remainingPeriod')}: {selectedProject.daysLeft} {t('daysLeft')}</p>
+                  </div>
+                </div>
+                <div className="mb-6">
+                  <label className="block text-white font-medium mb-2">{t('fundingAmount')}</label>
+                  <input
+                    type="number"
+                    value={fundingAmount}
+                    onChange={(e) => setFundingAmount(e.target.value)}
+                    placeholder={t('enterAmount')}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowFundingModal(false)}
+                    className="flex-1 px-6 py-3 bg-white/10 border border-white/20 text-white rounded-xl font-semibold hover:bg-white/20 transition-all duration-200"
+                  >
+{t('cancel')}
+                  </button>
+                  <button
+                    onClick={handleFundingSubmit}
+                    disabled={!fundingAmount}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {t('confirm')}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Voting Modal */}
+      {showVotingModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 w-full max-w-md shadow-2xl">
+            <h3 className="text-2xl font-bold text-white mb-4">{t('votingFor')}</h3>
+            {selectedProject && (
+              <>
+                <div className="mb-6">
+                  <h4 className="text-lg font-semibold text-white mb-2">{selectedProject.title}</h4>
+                  <p className="text-white/60 text-sm mb-4">{selectedProject.description}</p>
+                  <p className="text-white/60 text-sm">{t('remainingPeriod')}: {selectedProject.daysLeft} {t('daysLeft')}</p>
+                </div>
+                <div className="mb-6 space-y-3">
+                  <button
+                    onClick={() => setVoteType('agree')}
+                    className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${
+                      voteType === 'agree'
+                        ? 'border-green-500 bg-green-500/20 text-green-400'
+                        : 'border-white/20 bg-white/5 text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <ThumbsUp className="w-5 h-5" />
+                    <span className="font-medium">{t('agree')}</span>
+                    <span className="ml-auto text-sm">
+                      {selectedProject?.agree?.count || 0} {t('votes')} ({selectedProject?.agree?.percentage || 0}%)
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setVoteType('disagree')}
+                    className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${
+                      voteType === 'disagree'
+                        ? 'border-red-500 bg-red-500/20 text-red-400'
+                        : 'border-white/20 bg-white/5 text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <ThumbsDown className="w-5 h-5" />
+                    <span className="font-medium">{t('disagree')}</span>
+                    <span className="ml-auto text-sm">
+                      {selectedProject?.disagree?.count || 0} {t('votes')} ({selectedProject?.disagree?.percentage || 0}%)
+                    </span>
+                  </button>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowVotingModal(false)}
+                    className="flex-1 px-6 py-3 bg-white/10 border border-white/20 text-white rounded-xl font-semibold hover:bg-white/20 transition-all duration-200"
+                  >
+{t('cancel')}
+                  </button>
+                  <button
+                    onClick={handleVotingSubmit}
+                    disabled={!voteType}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {t('confirm')}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

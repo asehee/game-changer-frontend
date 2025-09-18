@@ -146,6 +146,30 @@ export const translations = {
     error: "오류",
     videoLoading: "동영상 로딩 중...",
     
+    // Crowdfunding
+    crowdfundingSection: "크라우드 펀딩",
+    progress: "진행률",
+    goal: "목표",
+    current: "현재",
+    raised: "모금됨",
+    daysLeft: "일 남음",
+    fund: "펀딩하기",
+    fundingAmount: "펀딩 금액",
+    enterAmount: "금액을 입력하세요",
+    confirm: "확인",
+    fundingProject: "프로젝트 펀딩",
+    remainingPeriod: "남은 기간",
+    
+    // Voting
+    voting: "투표 중",
+    votingSection: "투표 중",
+    agree: "찬성",
+    disagree: "반대",
+    notVoted: "미투표",
+    vote: "투표하기",
+    votes: "표",
+    votingFor: "투표",
+    
     // Common
     loading: "로딩 중...",
     error: "오류가 발생했습니다",
@@ -305,6 +329,30 @@ export const translations = {
     rewardSent: "Charged XRP has been sent to your wallet!",
     videoLoading: "Video loading...",
     playVideo: "Play Video",
+
+    // Crowdfunding
+    crowdfundingSection: "Crowdfunding",
+    progress: "Progress",
+    goal: "Goal",
+    current: "Current",
+    raised: "Raised",
+    daysLeft: "days left",
+    fund: "Fund Now",
+    fundingAmount: "Funding Amount",
+    enterAmount: "Enter amount",
+    confirm: "Confirm",
+    fundingProject: "Fund Project",
+    remainingPeriod: "Remaining Period",
+    
+    // Voting
+    voting: "Voting",
+    votingSection: "Voting",
+    agree: "Agree",
+    disagree: "Disagree", 
+    notVoted: "Not Voted",
+    vote: "Vote Now",
+    votes: "votes",
+    votingFor: "Voting",
 
     // Common
     loading: "Loading...",
