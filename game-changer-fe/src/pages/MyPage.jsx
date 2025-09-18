@@ -177,6 +177,24 @@ const MyPage = () => {
                   </div>
                 </div>
               )}
+              
+              {/* Charge and Withdraw Actions */}
+              <div className="mt-6 pt-4 border-t border-white/10">
+                <div className="grid grid-cols-2 gap-3">
+                  <button className="group flex items-center justify-center gap-2 bg-green-500/10 hover:bg-green-500/20 border border-green-400/30 hover:border-green-400/50 text-green-400 hover:text-green-300 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105">
+                    <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <span className="text-sm font-medium">{t('charge')}</span>
+                  </button>
+                  <button className="group flex items-center justify-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-400/30 hover:border-blue-400/50 text-blue-400 hover:text-blue-300 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105">
+                    <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                    <span className="text-sm font-medium">{t('withdraw')}</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
           <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-8 shadow-xl border border-white/20 hover:scale-105 transition-transform duration-200">

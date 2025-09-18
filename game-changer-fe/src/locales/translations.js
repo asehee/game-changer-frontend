@@ -170,6 +170,12 @@ export const translations = {
     votes: "표",
     votingFor: "투표",
     
+    // Wallet Actions
+    charge: "충전하기",
+    withdraw: "출금하기",
+    chargeWallet: "지갑 충전",
+    withdrawFunds: "자금 출금",
+    
     // Common
     loading: "로딩 중...",
     error: "오류가 발생했습니다",
@@ -353,6 +359,12 @@ export const translations = {
     vote: "Vote Now",
     votes: "votes",
     votingFor: "Voting",
+
+    // Wallet Actions
+    charge: "Charge",
+    withdraw: "Withdraw",
+    chargeWallet: "Charge Wallet",
+    withdrawFunds: "Withdraw Funds",
 
     // Common
     loading: "Loading...",
