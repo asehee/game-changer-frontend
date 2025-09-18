@@ -154,8 +154,18 @@ const Header = () => {
                 {t('earnfee')}
               </Link>
               <Link 
-                to="/mypage" 
+                to="/#crowdfunding" 
                 className="px-4 py-2.5 rounded-xl hover:bg-white/10 hover:shadow-sm transition-all duration-200 flex items-center gap-2 text-white hover:text-blue-400 font-medium"
+                onClick={(e) => {
+                  // If already on home page, scroll to section
+                  if (window.location.pathname === '/') {
+                    e.preventDefault();
+                    document.getElementById('crowdfunding')?.scrollIntoView({ 
+                      behavior: 'smooth',
+                      block: 'start'
+                    });
+                  }
+                }}
               >
                 <HandCoins className="w-4 h-4" />
                 {t('crowdfunding')}

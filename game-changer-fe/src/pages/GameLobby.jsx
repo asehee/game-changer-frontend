@@ -66,6 +66,19 @@ const GameLobby = () => {
     }
   ];
 
+  // Handle URL hash scrolling
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash === '#crowdfunding') {
+      setTimeout(() => {
+        document.getElementById('crowdfunding')?.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }, 100); // Small delay to ensure elements are rendered
+    }
+  }, []);
+
   useEffect(() => {
     const fetchGames = async () => {
       try {
@@ -306,7 +319,7 @@ const GameLobby = () => {
         </section>
 
         {/* Crowdfunding Section */}
-        <section className="mb-20">
+        <section id="crowdfunding" className="mb-20">
           <div className="flex items-center justify-between mb-10">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl flex items-center justify-center shadow-lg shadow-green-500/25">
