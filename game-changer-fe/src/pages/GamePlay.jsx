@@ -10,7 +10,7 @@ const GamePlay = () => {
   const { gameId } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { walletAddress, isConnected, userBalance } = useUser();
+  const { walletAddress, isConnected, userBalance, getTempBalance } = useUser();
   
   // 플레이 세션 관리
   const {
@@ -29,6 +29,14 @@ const GamePlay = () => {
   useEffect(() => {
     const gameDatabase = {
       // 모든 게임이 9999포트의 실제 게임을 보여줍니다
+      '0': {
+        id: gameId,
+        title: 'Game Demo',
+        description: '🎮 Interactive space battle game - Use arrow keys to move and space to shoot!',
+        price: 0.001,
+        gameUrl: 'http://localhost:3000/games/2048-master/index.html',
+        isExternal: true
+      },
       '1': { 
         id: '1',
         title: 'Cyber Warriors (WaveWar)',
@@ -75,7 +83,7 @@ const GamePlay = () => {
         title: 'Game Demo',
         description: '🎮 Interactive space battle game - Use arrow keys to move and space to shoot!',
         price: 0.001,
-        gameUrl: 'http://localhost:9999/wavewar',
+        gameUrl: 'http://localhost:3000/games/2048-master/index.html',
         isExternal: true
       }
     };
@@ -86,7 +94,7 @@ const GamePlay = () => {
   // 사용자 인증 및 계정 생성 확인
   useEffect(() => {
     const setupUser = async () => {
-      if (!walletAddress || !isConnected) {
+      if (!userBalance || !isConnected) {
         alert('로그인이 필요합니다.');
         navigate('/');
         return;
@@ -98,14 +106,14 @@ const GamePlay = () => {
         console.log('User account verified/created successfully');
         
         // 전역 상태의 잔액 조회 함수 사용
-        await fetchBalance(walletAddress);
+        await getTempBalance(walletAddress);
       } catch (error) {
         console.warn('Failed to verify/create user account:', error);
       }
     };
 
     setupUser();
-  }, [walletAddress, isConnected, navigate, fetchBalance]);
+  }, [walletAddress, isConnected, navigate, getTempBalance]);
 
   // 캔버스 게임 로직을 별도 useEffect로 분리하고 항상 실행되도록 수정
   useEffect(() => {
@@ -163,7 +171,7 @@ const GamePlay = () => {
 
   const handleStartGame = useCallback(async () => {
     // 지갑이 설정되지 않았으면 게임 시작 불가
-    if (!hasWallet) {
+    if (!walletAddress) {
       alert('먼저 상단 메뉴에서 임시 지갑을 생성해주세요.');
       return;
     }
@@ -181,7 +189,7 @@ const GamePlay = () => {
       console.error('Failed to start game:', error);
       alert(`게임 시작 실패: ${error.message}`);
     }
-  }, [startPlay, hasWallet]);
+  }, [startPlay, walletAddress]);
 
   const handleEndGame = useCallback(async () => {
     try {
@@ -194,7 +202,7 @@ const GamePlay = () => {
         alert(`게임이 종료되었습니다!\n플레이 시간: ${formatTime(playTime)}\n총 비용: $${totalCost.toFixed(6)}`);
         
         // 세션 종료 후 잔액 다시 조회
-        await fetchBalance(userId);
+        await getTempBalance(walletAddress);
         
         // 세션 종료 후 개발자 대시보드 데이터 갱신을 위한 이벤트 발생
         window.dispatchEvent(new CustomEvent('sessionEnded', {
@@ -262,14 +270,13 @@ const GamePlay = () => {
       return (
         <iframe
           src={gameData.gameUrl}
-          className="rounded-2xl border-0"
+          className="w-full h-full scale-75 origin-top-left"
           title={gameData.title}
-          frameBorder="0"
           allow="gamepad; microphone; camera"
           sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock"
           style={{
-            width: '1000px',
-            height: '600px',
+            width: '133.33%', // 100 / 0.75
+            height: '133.33%', // 100 / 0.75
             display: 'block',
             margin: '0 auto',
             border: 'none'
@@ -340,8 +347,8 @@ const GamePlay = () => {
             </div>
           </div>
 
-          {/* 잔액 표시 또는 충전 안내 */}
-          {hasWallet ? (
+          {/* 잔액 표시 또는 충전 안내
+          {userBalance ? (
             <div className="backdrop-blur-xl bg-green-500/10 rounded-2xl p-4 mb-6 border border-green-400/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -372,7 +379,7 @@ const GamePlay = () => {
                 </div>
               </div>
             </div>
-          )}
+          )} */}
 
           {isPlaying && (
             <div className="backdrop-blur-xl bg-blue-500/10 rounded-2xl p-6 mb-6 border border-blue-400/30">

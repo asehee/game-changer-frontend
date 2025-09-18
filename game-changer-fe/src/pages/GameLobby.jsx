@@ -125,14 +125,16 @@ const GameLobby = () => {
           const sortedByPlayers = [...allGames].sort((a, b) => (b.playerCount || 0) - (a.playerCount || 0));
           const sortedByDate = [...allGames].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
           
-          setGames({
-            recommended: sortedByRating.slice(0, 4),
-            top: sortedByPlayers.slice(0, 4),
-            new: sortedByDate.slice(0, 4)
-          });
+          // setGames({
+          //   recommended: sortedByRating.slice(0, 4),
+          //   top: sortedByPlayers.slice(0, 4),
+          //   new: sortedByDate.slice(0, 4)
+          // });
           
-          console.log('🎮 Games loaded from API successfully');
-          console.log('📚 Available genres:', uniqueGenres);
+          // console.log('🎮 Games loaded from API successfully');
+          // console.log('📚 Available genres:', uniqueGenres);
+          //일단 게임이 있어도 목업 보여주기!!
+          setMockGames();
         } else {
           console.log('⚠️ No games found from API, using mock data');
           setMockGames();
@@ -149,6 +151,7 @@ const GameLobby = () => {
     const setMockGames = () => {
       const mockGames = {
         recommended: [
+          { id: "782d301e-ecfb-4732-9624-b51c588a17e3", title: 'Puzzle 2048', description: 'Epic cyberpunk battle royale with stunning graphics and intense gameplay mechanics', playerCount: 15234, totalPlayTime: '125k h', rating: 4.8, price: 0.5, discount: 20, thumbnail: '/src/assets/game_images/puzzle1.png' },
           { id: 1, title: 'Cyber Warriors', description: 'Epic cyberpunk battle royale with stunning graphics and intense gameplay mechanics', playerCount: 15234, totalPlayTime: '125k h', rating: 4.8, price: 0.5, discount: 20, thumbnail: '/src/assets/game_images/shooting1.png' },
           { id: 2, title: 'Space Odyssey', description: 'Explore infinite galaxies in this immersive space simulation adventure', playerCount: 8923, totalPlayTime: '89k h', rating: 4.6, price: 0.8, thumbnail: '/src/assets/game_images/shooting2.png' },
           { id: 3, title: 'Fantasy Quest', description: 'Medieval RPG adventure with magical creatures and epic storylines', playerCount: 12456, totalPlayTime: '156k h', rating: 4.9, price: 0, thumbnail: '/src/assets/game_images/fantasy1.png' },

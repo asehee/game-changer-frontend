@@ -112,7 +112,8 @@ export const usePlaySession = (gameId, walletAddress) => {
     if (!walletAddress) return;
 
     try {
-      const currentSession = await PlaySessionApiService.getCurrentSession(walletAddress);
+      //const currentSession = await PlaySessionApiService.getCurrentSession(walletAddress);
+      const currentSession = false;
       if (currentSession) {
         setSession(currentSession.session);
         setIsPlaying(true);
