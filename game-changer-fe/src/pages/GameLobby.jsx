@@ -151,7 +151,7 @@ const GameLobby = () => {
     const setMockGames = () => {
       const mockGames = {
         recommended: [
-          { id: "782d301e-ecfb-4732-9624-b51c588a17e3", title: 'Puzzle 2048', description: 'Epic cyberpunk battle royale with stunning graphics and intense gameplay mechanics', playerCount: 15234, totalPlayTime: '125k h', rating: 4.8, price: 0.5, discount: 20, thumbnail: '/src/assets/game_images/puzzle1.png' },
+          { id: "3caf36a4-828a-4ef1-8c09-8129ec286940", title: 'Puzzle 2048', description: 'Epic cyberpunk battle royale with stunning graphics and intense gameplay mechanics', playerCount: 15234, totalPlayTime: '125k h', rating: 4.8, price: 0.5, discount: 20, thumbnail: '/src/assets/game_images/puzzle1.png' },
           { id: 1, title: 'Cyber Warriors', description: 'Epic cyberpunk battle royale with stunning graphics and intense gameplay mechanics', playerCount: 15234, totalPlayTime: '125k h', rating: 4.8, price: 0.5, discount: 20, thumbnail: '/src/assets/game_images/shooting1.png' },
           { id: 2, title: 'Space Odyssey', description: 'Explore infinite galaxies in this immersive space simulation adventure', playerCount: 8923, totalPlayTime: '89k h', rating: 4.6, price: 0.8, thumbnail: '/src/assets/game_images/shooting2.png' },
           { id: 3, title: 'Fantasy Quest', description: 'Medieval RPG adventure with magical creatures and epic storylines', playerCount: 12456, totalPlayTime: '156k h', rating: 4.9, price: 0, thumbnail: '/src/assets/game_images/fantasy1.png' },
