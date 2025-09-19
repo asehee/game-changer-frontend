@@ -10,7 +10,7 @@ const API_URL = window.location.origin.includes('localhost')
 
 const EarnFees = () => {
   const { t } = useTranslation();
-  const { user, isConnected, loading } = useUser();
+  const { user, isConnected, loading, getTempBalance } = useUser();
   const videoRef = useRef(null);
 
   const [status, setStatus] = useState('watching');
@@ -43,6 +43,7 @@ const EarnFees = () => {
       
       setStatus('success');
       alert(t('rewardSent'));
+      await getTempBalance(walletAddress);
 
     } catch (error) {
       setErrorMessage(error.message);
