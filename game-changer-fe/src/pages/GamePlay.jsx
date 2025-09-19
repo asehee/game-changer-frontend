@@ -4,7 +4,6 @@ import { Play, Square, Clock, DollarSign, AlertCircle, Maximize2, Volume2, Setti
 import { usePlaySession } from '../hooks/usePlaySession';
 import { useTranslation } from '../hooks/useTranslation';
 import { useUser } from '../contexts/UserContext';
-import DeveloperApiService from '../services/developerApi';
 
 const GamePlay = () => {
   const { gameId } = useParams();
@@ -14,12 +13,11 @@ const GamePlay = () => {
   
   // 플레이 세션 관리
   const {
-    session,
     isPlaying,
     loading: sessionLoading,
     error: sessionError,
     playTime,
-    cost: totalCost,
+    totalCost,
     startPlay,
     stopPlay
   } = usePlaySession(gameId, walletAddress);
@@ -102,10 +100,6 @@ const GamePlay = () => {
 
       // 사용자 계정 확인/생성
       try {
-        await DeveloperApiService.findOrCreateUser(walletAddress);
-        console.log('User account verified/created successfully');
-        
-        // 전역 상태의 잔액 조회 함수 사용
         await getTempBalance(walletAddress);
       } catch (error) {
         console.warn('Failed to verify/create user account:', error);
@@ -196,10 +190,10 @@ const GamePlay = () => {
       console.log('Ending game session...');
       const result = await stopPlay();
       console.log(`Total play time: ${formatTime(playTime)}`);
-      console.log(`Total cost: $${totalCost.toFixed(6)}`);
+      console.log(`Total cost: $${Number(totalCost).toFixed(2)}`);
       
       if (result) {
-        alert(`게임이 종료되었습니다!\n플레이 시간: ${formatTime(playTime)}\n총 비용: $${totalCost.toFixed(6)}`);
+        alert(`게임이 종료되었습니다!\n플레이 시간: ${formatTime(playTime)}\n총 비용: $${Number(totalCost).toFixed(2)}`);
         
         // 세션 종료 후 잔액 다시 조회
         await getTempBalance(walletAddress);
@@ -399,7 +393,7 @@ const GamePlay = () => {
                   </div>
                   <div>
                     <div className="text-sm text-white/60">Total Cost</div>
-                    <div className="text-2xl font-bold text-white">${totalCost.toFixed(4)}</div>
+                    <div className="text-2xl font-bold text-white">{Number(totalCost).toFixed(2)}</div>
                   </div>
                 </div>
               </div>
