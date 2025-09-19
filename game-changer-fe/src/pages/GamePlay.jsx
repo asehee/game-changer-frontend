@@ -20,7 +20,7 @@ const GamePlay = () => {
     totalCost,
     startPlay,
     stopPlay
-  } = usePlaySession(gameId, walletAddress);
+  } = usePlaySession(gameId, walletAddress, getTempBalance);
 
   const [gameData, setGameData] = useState(null);
 

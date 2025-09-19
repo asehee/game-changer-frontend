@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import PlaySessionApiService from '../services/playSessionApi';
 import { checkSessionExpiration, getTokenPayload } from '../utils/jwt';
 
+
 // 플레이 세션을 관리하는 커스텀 훅
-export const usePlaySession = (gameId, walletAddress) => {
+export const usePlaySession = (gameId, walletAddress, getTempBalance) => {
   const [sessionToken, setSessionToken] = useState(null);
   const [totalCost, setTotalCost] = useState(0);
   const [activePlayTime, setActivePlayTime] = useState(0);
@@ -32,45 +33,50 @@ export const usePlaySession = (gameId, walletAddress) => {
     }
   }, []);
 
-  const startHeartbeatAndTimer = useCallback((initialToken, initialPlayTime = 0) => {
+  const sessionTokenRef = useRef(null);
+  useEffect(() => {
+    sessionTokenRef.current = sessionToken;
+  }, [sessionToken]);
+
+  const startHeartbeatAndTimer = useCallback((isNew, initialToken, initialPlayTime = 0) => {
     cleanupIntervals(); // 기존 인터벌이 있다면 정리
     setSessionToken(initialToken);
+    sessionTokenRef.current = initialToken;
     setIsPlaying(true);
     setError(null);
     startTime.current = Date.now() - (initialPlayTime * 1000); // 밀리초 단위로 변환
     
     const sendHeartbeat = async () => {
-      // 클로저 문제를 피하기 위해, 항상 최신 토큰을 가져오도록 함
-      setSessionToken(currentToken => {
-        if (!currentToken) {
-          cleanupIntervals();
-          return null;
+      const currentToken = sessionTokenRef.current; // 항상 최신 값
+      if (!currentToken) {
+        cleanupIntervals();
+        return;
+      }
+      console.log("Sending heartbeat with token:", sessionToken);
+    
+      try {
+        const res = await PlaySessionApiService.sendHeartbeat(sessionToken);
+    
+        if (res.sessionToken) {
+          console.log("Heartbeat success, new token:", res.sessionToken);
+          setSessionToken(res.sessionToken); // 새 토큰으로 갱신
+          setTotalCost(Number(res.totalCost));
+          setActivePlayTime(res.activePlayTime);
         }
-        console.log("Sending heartbeat with token:", currentToken);
-        PlaySessionApiService.sendHeartbeat(currentToken)
-          .then(res => {
-            if (res.sessionToken) {
-              console.log("Heartbeat success, new token:", res.sessionToken);
-              setSessionToken(res.sessionToken); // 새 토큰으로 갱신
-              setTotalCost(Number(res.totalCost));
-              setActivePlayTime(res.activePlayTime);
-            }
-          })
-          .catch(err => {
-            console.error('Heartbeat failed:', err);
-            setError('연결이 불안정합니다. 게임을 다시 시작해주세요.');
-            cleanupIntervals();
-            setIsPlaying(false);
-          });
-        return currentToken;
-      });
+        const balance = await getTempBalance(walletAddress);
+        console.log("Latest balance:", balance);
+    
+      } catch (err) {
+        console.error("Heartbeat failed:", err);
+        setError("연결이 불안정합니다. 게임을 다시 시작해주세요.");
+        cleanupIntervals();
+        setIsPlaying(false);
+      }
     };
     
-    sendHeartbeat(); // 즉시 1회 실행)
-
+    if (!isNew) {sendHeartbeat();}
     heartbeatInterval.current = setInterval(sendHeartbeat, 30000); // 30초마다 반복
     playTimeInterval.current = setInterval(updatePlayTime, 1000);
-
   }, [cleanupIntervals, updatePlayTime]);
 
   // 플레이 세션 시작
@@ -87,7 +93,7 @@ export const usePlaySession = (gameId, walletAddress) => {
         if (checkSessionExpiration(res.sessionInfo.expiresAt)) {
           // 유효한 세션이 있는 경우 -> 이어하기
           console.log("기존 세션을 이어합니다.", res.sessionInfo);
-          startHeartbeatAndTimer(res.sessionInfo.sessionToken, res.sessionInfo.activePlayTime);
+          startHeartbeatAndTimer(false, res.sessionInfo.sessionToken, res.sessionInfo.activePlayTime);
           return;
         } else {
           // 세션이 있지만 만료된 경우
@@ -95,7 +101,8 @@ export const usePlaySession = (gameId, walletAddress) => {
           await stopPlay(); // 기존 세션 정리
           const newSession = await PlaySessionApiService.startSession(walletAddress, gameId);
           setTotalCost(Number(newSession.totalCost));
-          startHeartbeatAndTimer(newSession.sessionToken);
+          await getTempBalance(walletAddress);
+          startHeartbeatAndTimer(true, newSession.sessionToken);
           return;
         }
       }
@@ -104,7 +111,8 @@ export const usePlaySession = (gameId, walletAddress) => {
       console.log("새로운 세션을 시작합니다.");
       const newSession = await PlaySessionApiService.startSession(walletAddress, gameId);
       setTotalCost(Number(newSession.totalCost));
-      startHeartbeatAndTimer(newSession.sessionToken);
+      await getTempBalance(walletAddress);
+      startHeartbeatAndTimer(true, newSession.sessionToken);
     
     } catch (error) {
       setError(error.message);
@@ -113,7 +121,7 @@ export const usePlaySession = (gameId, walletAddress) => {
     } finally {
       setLoading(false);
     }
-  }, [gameId, walletAddress, startHeartbeatAndTimer]);
+  }, [gameId, walletAddress, startHeartbeatAndTimer, getTempBalance]);
 
   // 플레이 세션 중지
   const stopPlay = useCallback(async () => {
@@ -125,6 +133,7 @@ export const usePlaySession = (gameId, walletAddress) => {
     try {
       await PlaySessionApiService.stopSession(sessionToken);
       cleanupIntervals(); // 모든 타이머 정리
+      await getTempBalance(walletAddress);
       
       // 상태 초기화
       setIsPlaying(false);
@@ -140,7 +149,7 @@ export const usePlaySession = (gameId, walletAddress) => {
     } finally {
       setLoading(false);
     }
-  }, [sessionToken, cleanupIntervals]);
+  }, [sessionToken, cleanupIntervals, getTempBalance, walletAddress]);
 
   // 컴포넌트 언마운트 시 모든 인터벌 정리
   useEffect(() => {
@@ -154,7 +163,7 @@ export const usePlaySession = (gameId, walletAddress) => {
       if (document.hidden) {
         cleanupIntervals();
       } else {
-        startHeartbeatAndTimer(sessionToken, playTime);
+        startHeartbeatAndTimer(false, sessionToken, playTime);
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
