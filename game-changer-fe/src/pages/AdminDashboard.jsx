@@ -13,7 +13,39 @@ const AdminDashboard = () => {
   const [fundingProjects, setFundingProjects] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Fetch crowdfunding projects from API
+  // Mock data for demonstration
+  const mockProjects = [
+    {
+      id: 'mock-1',
+      name: 'VR 어드벤처 게임',
+      goal: 5000000,
+      raised: 3250000,
+      participants: 125,
+      startDate: '2024-08-15',
+      status: 'in_progress',
+      finished: false,
+      voteStatus: 'passed',
+      voteApprovalRate: 87,
+      endDate: '2024-12-31T23:59:59.000Z',
+      fundingProgress: 65
+    },
+    {
+      id: 'mock-2', 
+      name: '블록체인 RPG',
+      goal: 8000000,
+      raised: 8500000,
+      participants: 200,
+      startDate: '2024-07-01',
+      status: 'goal_reached',
+      finished: false,
+      voteStatus: 'passed',
+      voteApprovalRate: 92,
+      endDate: '2024-11-30T23:59:59.000Z',
+      fundingProgress: 106.25
+    }
+  ];
+
+  // Fetch crowdfunding projects from API and mix with mock data
   const fetchCrowdfundingProjects = async () => {
     setLoading(true);
     try {
@@ -28,7 +60,7 @@ const AdminDashboard = () => {
       console.log('[AdminDashboard] Crowdfunding API response:', data);
       
       // API 데이터를 관리자 페이지 UI에 맞게 변환
-      const transformedData = data.map(project => ({
+      const transformedApiData = data.map(project => ({
         id: project.id,
         name: project.gameName,
         goal: parseFloat(project.goalAmount),
@@ -43,11 +75,13 @@ const AdminDashboard = () => {
         fundingProgress: project.fundingProgress
       }));
       
-      setFundingProjects(transformedData);
+      // API 데이터와 목업 데이터 결합
+      const combinedData = [...transformedApiData, ...mockProjects];
+      setFundingProjects(combinedData);
     } catch (error) {
       console.error('[AdminDashboard] Failed to fetch crowdfunding projects:', error);
-      // 오류 시 빈 배열로 설정
-      setFundingProjects([]);
+      // 오류 시 목업 데이터만 사용
+      setFundingProjects(mockProjects);
     } finally {
       setLoading(false);
     }
