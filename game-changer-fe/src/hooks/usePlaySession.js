@@ -52,14 +52,15 @@ export const usePlaySession = (gameId, walletAddress, getTempBalance) => {
         cleanupIntervals();
         return;
       }
-      console.log("Sending heartbeat with token:", sessionToken);
+      console.log("Sending heartbeat with token:", currentToken);
     
       try {
-        const res = await PlaySessionApiService.sendHeartbeat(sessionToken);
+        const res = await PlaySessionApiService.sendHeartbeat(currentToken);
     
         if (res.sessionToken) {
           console.log("Heartbeat success, new token:", res.sessionToken);
-          setSessionToken(res.sessionToken); // 새 토큰으로 갱신
+          setSessionToken(res.currentToken); // 새 토큰으로 갱신
+          sessionTokenRef.current = res.sessionToken;
           setTotalCost(Number(res.totalCost));
           setActivePlayTime(res.activePlayTime);
         }
