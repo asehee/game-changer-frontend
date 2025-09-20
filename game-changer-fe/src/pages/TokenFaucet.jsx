@@ -59,19 +59,31 @@ const TokenFaucet = () => {
     setErrorMessage('');
     
     try {
+      const requestData = { walletAddress: walletAddress };
+      console.log('[TokenFaucet] Sending request to /api/chain/tokenfaucet:', requestData);
+      
       const response = await fetch(`${API_URL}/api/chain/tokenfaucet`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ walletAddress: walletAddress }),
+        body: JSON.stringify(requestData),
       });
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('[TokenFaucet] API Error Response:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData: errorData
+        });
         throw new Error(errorData.message || t('claimFailed'));
       }
 
+      const responseData = await response.json();
+      console.log('[TokenFaucet] API Success Response:', responseData);
+      
       setFaucetClaimed(true);
       await getTempBalance(walletAddress); // Context의 잔액 갱신 함수 호출
     } catch (error) {
+      console.error('[TokenFaucet] Request failed:', error);
       setErrorMessage(error.message);
     } finally {
       setIsLoading(false);

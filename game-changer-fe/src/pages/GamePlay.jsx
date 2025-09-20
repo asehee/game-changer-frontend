@@ -29,7 +29,7 @@ const GamePlay = () => {
       // 모든 게임이 9999포트의 실제 게임을 보여줍니다
       '0': {
         id: gameId,
-        title: 'Game Demo',
+        title: 'Puzzle 2048',
         description: '🎮 Interactive space battle game - Use arrow keys to move and space to shoot!',
         price: 0.001,
         gameUrl: 'http://localhost:3000/games/2048-master/index.html',

@@ -8,6 +8,7 @@ import MyPage from './pages/MyPage';
 import DeveloperDashboard from './pages/DeveloperDashboard';
 import TokenFaucet from './pages/TokenFaucet';
 import EarnFees from './pages/EarnFees';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
               <Route path="developer" element={<DeveloperDashboard />} />
               <Route path="tokenfaucet" element={<TokenFaucet />} />
               <Route path="earnfees" element={<EarnFees />} />
+              <Route path="admin" element={<AdminDashboard />} />
             </Route>
           </Routes>
         </Router>

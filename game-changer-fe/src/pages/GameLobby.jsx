@@ -4,6 +4,10 @@ import GameCard from '../components/GameCard';
 import { useTranslation } from '../hooks/useTranslation';
 import axios from 'axios';
 
+const API_URL = window.location.origin.includes('localhost') 
+  ? 'http://localhost:3000'
+  : 'http://localhost:3000';
+
 const GameLobby = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -22,28 +26,8 @@ const GameLobby = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [fundingAmount, setFundingAmount] = useState('');
   const [voteType, setVoteType] = useState(null); // 'agree' or 'disagree'
-
-  // Mock data for crowdfunding and voting
-  const crowdfundingProjects = [
-    {
-      id: 1,
-      title: "Virtual Reality RPG Adventure",
-      description: "Epic fantasy RPG with VR support and multiplayer raids",
-      goal: 100000,
-      raised: 75000,
-      daysLeft: 12,
-      image: "/src/assets/game_images/fantasy1.png"
-    },
-    {
-      id: 2,
-      title: "Blockchain Strategy Game",
-      description: "Real-time strategy game with NFT units and token economy",
-      goal: 50000,
-      raised: 32000,
-      daysLeft: 8,
-      image: "/src/assets/game_images/shooting1.png"
-    }
-  ];
+  const [crowdfundingProjects, setCrowdfundingProjects] = useState([]);
+  const [loadingCrowdfunding, setLoadingCrowdfunding] = useState(false);
 
   const votingProjects = [
     {
@@ -65,6 +49,50 @@ const GameLobby = () => {
       totalVotes: 135
     }
   ];
+
+  // Fetch crowdfunding projects from API
+  const fetchCrowdfundingProjects = async () => {
+    setLoadingCrowdfunding(true);
+    try {
+      console.log('[GameLobby] Fetching crowdfunding projects...');
+      const response = await fetch(`${API_URL}/api/crowd-funding`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('[GameLobby] Crowdfunding API response:', data);
+      
+      // API 데이터를 UI에 맞게 변환
+      const transformedData = data.map(project => ({
+        id: project.id,
+        title: project.gameName,
+        description: `Funding goal: $${parseFloat(project.goalAmount).toLocaleString()}`,
+        goal: parseFloat(project.goalAmount),
+        raised: parseFloat(project.currentAmount),
+        daysLeft: Math.max(0, Math.ceil((new Date(project.endDate) - new Date()) / (1000 * 60 * 60 * 24))),
+        image: "/src/assets/game_images/fantasy1.png", // 기본 이미지 사용
+        fundingProgress: project.fundingProgress,
+        participantCount: project.participantCount,
+        voteStatus: project.voteStatus,
+        fundingStatus: project.fundingStatus
+      }));
+      
+      setCrowdfundingProjects(transformedData);
+    } catch (error) {
+      console.error('[GameLobby] Failed to fetch crowdfunding projects:', error);
+      // 오류 시 빈 배열로 설정
+      setCrowdfundingProjects([]);
+    } finally {
+      setLoadingCrowdfunding(false);
+    }
+  };
+
+  // Load crowdfunding projects on component mount
+  useEffect(() => {
+    fetchCrowdfundingProjects();
+  }, []);
 
   // Handle URL hash scrolling
   useEffect(() => {
@@ -360,7 +388,19 @@ const GameLobby = () => {
             </button>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 lg:gap-10">
-            {crowdfundingProjects.map(project => (
+            {loadingCrowdfunding ? (
+              <div className="col-span-full flex items-center justify-center py-20">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white/60 mx-auto mb-4"></div>
+                  <p className="text-white/60">{t('loading')}...</p>
+                </div>
+              </div>
+            ) : crowdfundingProjects.length === 0 ? (
+              <div className="col-span-full text-center py-20">
+                <p className="text-white/60 text-lg">{t('noCrowdfundingProjects') || 'No crowdfunding projects available'}</p>
+              </div>
+            ) : (
+              crowdfundingProjects.map(project => (
               <div key={project.id} className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl overflow-hidden shadow-2xl hover:scale-105 transition-all duration-300 group">
                 <div className="h-48 relative overflow-hidden">
                   <img 
@@ -407,7 +447,8 @@ const GameLobby = () => {
                   </button>
                 </div>
               </div>
-            ))}
+              ))
+            )}
           </div>
         </section>
 

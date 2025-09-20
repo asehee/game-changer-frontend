@@ -10,6 +10,31 @@ const MyPage = () => {
   const { user, walletAddress, isLoggedIn, nickname, loading, disconnectWallet } = useUser();
   const { t } = useTranslation();
 
+  // Mock funding history data
+  const [fundingHistory, setFundingHistory] = useState([
+    {
+      id: 1,
+      gameTitle: "Virtual Reality RPG Adventure",
+      amount: 150,
+      date: "2024-01-15",
+      status: "active"
+    },
+    {
+      id: 2,
+      gameTitle: "Blockchain Strategy Game",
+      amount: 75,
+      date: "2024-01-10", 
+      status: "active"
+    },
+    {
+      id: 3,
+      gameTitle: "Space Exploration MMO",
+      amount: 200,
+      date: "2024-01-05",
+      status: "active"
+    }
+  ]);
+
   // 로그인하지 않은 경우 홈페이지로 리디렉션
   useEffect(() => {
     if (!loading && !isLoggedIn) {
@@ -41,6 +66,15 @@ const MyPage = () => {
   const handleDisconnect = () => {
     disconnectWallet();
     window.location.href = '/';
+  };
+
+  const handleCancelFunding = (fundingId, gameTitle) => {
+    if (window.confirm(t('cancelConfirm'))) {
+      setFundingHistory(prev => 
+        prev.filter(funding => funding.id !== fundingId)
+      );
+      alert(t('fundingCanceled'));
+    }
   };
 
   if (loading || !isLoggedIn) {
@@ -230,73 +264,49 @@ const MyPage = () => {
           </div>
         </div>
 
-        {/* Game and NFT Sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
-          <section className="h-full">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl flex items-center justify-center shadow-lg shadow-blue-500/25">
-                <Play className="w-6 h-6 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-white tracking-tight">{t('recentGames')}</h2>
-            </div>
-            <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-8 text-center shadow-xl border border-white/20 h-64 flex flex-col justify-center">
-              <p className="text-white/60 mb-6 text-lg">{t('noGamesPlayed')}</p>
-              <button
-                onClick={() => window.location.href = '/'}
-                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-2xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                {t('exploreGames')}
-              </button>
-            </div>
-          </section>
-
-          <section className="h-full">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl flex items-center justify-center shadow-lg shadow-purple-500/25">
-                <Award className="w-6 h-6 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-white tracking-tight">{t('ownedNFTs')}</h2>
-            </div>
-            <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-8 text-center shadow-xl border border-white/20 h-64 flex flex-col justify-center">
-              <p className="text-white/60 mb-2 text-lg">{t('noNFTs')}</p>
-              <p className="text-sm text-white/40">
-                {t('playGamesEarnNFTs')}
-              </p>
-            </div>
-          </section>
-        </div>
-
-        {/* Achievements Section */}
+        {/* My Funding History Section */}
         <section>
           <div className="flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-3xl flex items-center justify-center shadow-lg shadow-yellow-500/25">
-              <Award className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl flex items-center justify-center shadow-lg shadow-green-500/25">
+              <TrendingUp className="w-6 h-6 text-white" />
             </div>
-            <h2 className="text-3xl font-bold text-white tracking-tight">{t('achievements')}</h2>
+            <h2 className="text-3xl font-bold text-white tracking-tight">{t('myFundings')}</h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { nameKey: 'firstSteps', descKey: 'firstGamePlay', unlocked: false },
-              { nameKey: 'timeWarrior', descKey: 'play100Hours', unlocked: false },
-              { nameKey: 'explorer', descKey: 'play10Games', unlocked: false },
-              { nameKey: 'dedicated', descKey: 'play1000Hours', unlocked: false },
-            ].map((achievement, index) => (
-              <div 
-                key={index} 
-                className={`backdrop-blur-xl rounded-3xl p-6 shadow-xl border-2 transition-transform duration-200 hover:scale-105 ${
-                  achievement.unlocked ? 'border-yellow-400 bg-yellow-400/10' : 'border-white/20 bg-white/10 opacity-70'
-                }`}
-              >
-                <div className={`w-16 h-16 rounded-3xl flex items-center justify-center mb-4 mx-auto ${
-                  achievement.unlocked ? 'bg-gradient-to-br from-yellow-500 to-orange-600 shadow-lg shadow-yellow-500/25' : 'bg-white/10 backdrop-blur-xl border border-white/20'
-                }`}>
-                  <Award className={`w-8 h-8 ${achievement.unlocked ? 'text-white' : 'text-white/40'}`} />
+          
+          {fundingHistory.length === 0 ? (
+            <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-8 text-center shadow-xl border border-white/20">
+              <p className="text-white/60 text-lg">{t('noFundings')}</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {fundingHistory.map((funding) => (
+                <div key={funding.id} className="backdrop-blur-xl bg-white/10 rounded-3xl p-6 shadow-xl border border-white/20 hover:scale-[1.02] transition-all duration-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-white mb-2">{funding.gameTitle}</h3>
+                      <div className="flex flex-col sm:flex-row gap-4 text-sm text-white/80">
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-green-400" />
+                          <span>{t('fundingAmount')}: <span className="font-bold text-green-400">${funding.amount}</span></span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-blue-400" />
+                          <span>{t('fundingDate')}: <span className="font-mono">{funding.date}</span></span>
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleCancelFunding(funding.id, funding.gameTitle)}
+                      className="group bg-red-500/10 hover:bg-red-500/20 border border-red-400/30 hover:border-red-400/50 text-red-400 hover:text-red-300 px-4 py-2 rounded-xl transition-all duration-200 hover:scale-105 flex items-center gap-2"
+                    >
+                      <XCircle className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                      <span className="text-sm font-medium">{t('cancelFunding')}</span>
+                    </button>
+                  </div>
                 </div>
-                <h3 className="text-white font-bold mb-2 text-center">{t(achievement.nameKey)}</h3>
-                <p className="text-sm text-white/60 text-center">{t(achievement.descKey)}</p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </div>

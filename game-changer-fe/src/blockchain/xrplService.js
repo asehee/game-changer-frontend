@@ -33,7 +33,9 @@ export const getTokenMetadata = async () => {
 };
 
 export const checkTrustline = async (walletAddress) => {
+  console.log(walletAddress)
   const metadata = await getTokenMetadata();
+  console.log(metadata)
   const client = new Client(metadata.testnet);
   await client.connect();
   
@@ -52,7 +54,8 @@ export const checkTrustline = async (walletAddress) => {
 
   } catch (error) {
     await client.disconnect();
-    if (error.data?.error === 'actNotFound') {
+    if (error.data?.error === 'actNotFound' || error.message?.includes('Account malformed') || error.message?.includes('malformed')) {
+        console.log("계정이 아직 활성화되지 않았거나 찾을 수 없습니다:", walletAddress);
         return false;
     }
     console.error("신뢰선 확인 중 오류:", error);
