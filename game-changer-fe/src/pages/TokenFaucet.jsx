@@ -81,7 +81,7 @@ const TokenFaucet = () => {
       console.log('[TokenFaucet] API Success Response:', responseData);
       
       setFaucetClaimed(true);
-      await getTempBalance(walletAddress); // Context의 잔액 갱신 함수 호출
+      //await getTempBalance(walletAddress); // Context의 잔액 갱신 함수 호출
     } catch (error) {
       console.error('[TokenFaucet] Request failed:', error);
       setErrorMessage(error.message);
