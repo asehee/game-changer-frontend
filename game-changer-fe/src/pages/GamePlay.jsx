@@ -30,8 +30,8 @@ const GamePlay = () => {
       '0': {
         id: gameId,
         title: 'Puzzle 2048',
-        description: '🎮 Interactive space battle game - Use arrow keys to move and space to shoot!',
-        price: 0.001,
+        description: '🎮 Just arrow keys, simple moves, endless fun!',
+        price: 2,
         gameUrl: 'http://localhost:3000/games/2048-master/index.html',
         isExternal: true
       },
@@ -266,13 +266,13 @@ const GamePlay = () => {
       return (
         <iframe
           src={gameData.gameUrl}
-          className="w-full h-full scale-75 origin-top-left"
+          className="w-full h-full"
           title={gameData.title}
           allow="gamepad; microphone; camera"
           sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock"
           style={{
-            width: '133.33%', // 100 / 0.75
-            height: '133.33%', // 100 / 0.75
+            width: '100%',
+            height: '100%',
             display: 'block',
             margin: '0 auto',
             border: 'none'
@@ -338,7 +338,7 @@ const GamePlay = () => {
               <p className="text-white/60 text-lg">{gameData.description}</p>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-bold text-blue-400">${gameData.price}/sec</div>
+              <div className="text-3xl font-bold text-blue-400">${gameData.price}/min</div>
               <div className="text-sm text-gray-500">Pay per second</div>
             </div>
           </div>
