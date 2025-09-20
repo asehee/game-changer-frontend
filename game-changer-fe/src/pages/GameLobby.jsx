@@ -19,7 +19,7 @@ const GameLobby = () => {
     new: []
   });
   const [loading, setLoading] = useState(false);
-  const [genres, setGenres] = useState(['all']);
+  const [genres, setGenres] = useState(['all', 'action', 'adventure', 'rpg', 'strategy', 'puzzle', 'sports', 'racing']);
   const { t } = useTranslation();
 
   // Modal states
@@ -151,9 +151,7 @@ const GameLobby = () => {
         if (response.data && response.data.length > 0) {
           const allGames = response.data;
           
-          // 장르 추출 (중복 제거 및 빈 문자열 제외)
-          const uniqueGenres = [...new Set(allGames.map(game => game.genre).filter(genre => genre))];
-          setGenres(['all', ...uniqueGenres]);
+          // 장르는 하드코딩된 목록 사용 (API에서 가져오지 않음)
           
           // 게임을 평점과 인기도에 따라 정렬
           const sortedByRating = [...allGames].sort((a, b) => (b.rating || 0) - (a.rating || 0));
