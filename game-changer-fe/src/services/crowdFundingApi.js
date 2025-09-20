@@ -64,6 +64,52 @@ class CrowdFundingApiService {
       throw error;
     }
   }
+
+  async batchCancel(crowdId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/crowd-funding/batchCancel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ crowdId }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('[CrowdFundingApi] Error processing batch cancel:', error);
+      throw error;
+    }
+  }
+
+  async batchFinish(crowdId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/crowd-funding/batchFinish`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ crowdId }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('[CrowdFundingApi] Error processing batch finish:', error);
+      throw error;
+    }
+  }
 }
 
 export default new CrowdFundingApiService();

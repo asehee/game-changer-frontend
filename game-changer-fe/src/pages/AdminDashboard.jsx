@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { DollarSign, Vote, CheckCircle, XCircle, TrendingUp, Users, Calendar, Settings } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
+import CrowdFundingApiService from '../services/crowdFundingApi';
 
 const API_URL = window.location.origin.includes('localhost') 
   ? 'http://localhost:3000'
@@ -58,29 +59,51 @@ const AdminDashboard = () => {
   }, []);
 
 
-  const handleFinishFunding = (projectId, projectName) => {
+  const handleFinishFunding = async (crowdId, projectName) => {
     if (window.confirm(t('finishConfirm'))) {
-      setFundingProjects(prev =>
-        prev.map(project =>
-          project.id === projectId
-            ? { ...project, finished: true }
-            : project
-        )
-      );
-      alert(t('projectFinished'));
+      try {
+        const result = await CrowdFundingApiService.batchFinish(crowdId);
+        
+        if (result.status === 'success') {
+          setFundingProjects(prev =>
+            prev.map(project =>
+              project.id === crowdId
+                ? { ...project, finished: true, status: 'finished' }
+                : project
+            )
+          );
+          alert(t('projectFinished'));
+          // 목록 새로고침
+          fetchCrowdfundingProjects();
+        }
+      } catch (error) {
+        console.error('Finish funding failed:', error);
+        alert(error.message || '프로젝트 완료 처리 중 오류가 발생했습니다.');
+      }
     }
   };
 
-  const handleCancelFunding = (projectId, projectName) => {
+  const handleCancelFunding = async (crowdId, projectName) => {
     if (window.confirm(`정말로 "${projectName}" 프로젝트를 취소하시겠습니까?`)) {
-      setFundingProjects(prev =>
-        prev.map(project =>
-          project.id === projectId
-            ? { ...project, status: "cancelled", finished: true }
-            : project
-        )
-      );
-      alert('프로젝트가 취소되었습니다.');
+      try {
+        const result = await CrowdFundingApiService.batchCancel(crowdId);
+        
+        if (result.status === 'success') {
+          setFundingProjects(prev =>
+            prev.map(project =>
+              project.id === crowdId
+                ? { ...project, status: 'cancelled', finished: true }
+                : project
+            )
+          );
+          alert('프로젝트가 취소되었습니다.');
+          // 목록 새로고침
+          fetchCrowdfundingProjects();
+        }
+      } catch (error) {
+        console.error('Cancel funding failed:', error);
+        alert(error.message || '프로젝트 취소 처리 중 오류가 발생했습니다.');
+      }
     }
   };
 
@@ -207,21 +230,12 @@ const AdminDashboard = () => {
                         </span>
                       ) : (
                         <div className="flex gap-2 justify-center">
-                          {project.raised >= project.goal && project.voteStatus === 'passed' ? (
-                            <button
-                              onClick={() => handleFinishFunding(project.id, project.name)}
-                              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-medium transition-colors"
-                            >
-                              Finish
-                            </button>
-                          ) : (
-                            <button
-                              disabled
-                              className="bg-gray-600/50 text-gray-400 px-4 py-2 rounded-xl font-medium cursor-not-allowed"
-                            >
-                              Finish
-                            </button>
-                          )}
+                          <button
+                            onClick={() => handleFinishFunding(project.id, project.name)}
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-medium transition-colors"
+                          >
+                            Finish
+                          </button>
                           <button
                             onClick={() => handleCancelFunding(project.id, project.name)}
                             className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-medium transition-colors"
