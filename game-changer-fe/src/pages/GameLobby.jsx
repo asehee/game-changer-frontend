@@ -23,6 +23,7 @@ const GameLobby = () => {
   // Modal states
   const [showFundingModal, setShowFundingModal] = useState(false);
   const [showVotingModal, setShowVotingModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [fundingAmount, setFundingAmount] = useState('');
   const [voteType, setVoteType] = useState(null); // 'agree' or 'disagree'
@@ -121,16 +122,20 @@ const GameLobby = () => {
           setVoteType(null);
           setSelectedProject(null);
         }
+        if (showSuccessModal) {
+          setShowSuccessModal(false);
+          setSelectedProject(null);
+        }
       }
     };
 
-    if (showFundingModal || showVotingModal) {
+    if (showFundingModal || showVotingModal || showSuccessModal) {
       document.addEventListener('keydown', handleEscapeKey);
       return () => {
         document.removeEventListener('keydown', handleEscapeKey);
       };
     }
-  }, [showFundingModal, showVotingModal]);
+  }, [showFundingModal, showVotingModal, showSuccessModal]);
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -183,7 +188,6 @@ const GameLobby = () => {
           { id: 1, title: 'Cyber Warriors', description: 'Epic cyberpunk battle royale with stunning graphics and intense gameplay mechanics', playerCount: 15234, totalPlayTime: '125k h', rating: 4.8, price: 0.5, discount: 20, thumbnail: '/src/assets/game_images/shooting1.png' },
           { id: 2, title: 'Space Odyssey', description: 'Explore infinite galaxies in this immersive space simulation adventure', playerCount: 8923, totalPlayTime: '89k h', rating: 4.6, price: 0.8, thumbnail: '/src/assets/game_images/shooting2.png' },
           { id: 3, title: 'Fantasy Quest', description: 'Medieval RPG adventure with magical creatures and epic storylines', playerCount: 12456, totalPlayTime: '156k h', rating: 4.9, price: 0, thumbnail: '/src/assets/game_images/fantasy1.png' },
-          { id: 4, title: 'Racing Thunder', description: 'High-speed racing with blockchain rewards and competitive multiplayer', playerCount: 6789, totalPlayTime: '67k h', rating: 4.4, price: 0.3, thumbnail: '/src/assets/game_images/shooting3.png' },
         ],
         top: [
           { id: 5, title: 'Battle Arena', description: 'Competitive 5v5 MOBA with unique heroes and strategic gameplay', playerCount: 25678, totalPlayTime: '289k h', rating: 4.7, price: 0, thumbnail: '/src/assets/game_images/fantasy2.png' },
@@ -230,10 +234,12 @@ const GameLobby = () => {
 
   const handleFundingSubmit = () => {
     if (fundingAmount && selectedProject) {
-      alert(`Funded ${fundingAmount} to ${selectedProject.title}`);
+      // 펀딩 모달 닫기
       setShowFundingModal(false);
+      // 성공 모달 표시
+      setShowSuccessModal(true);
+      // 상태 초기화
       setFundingAmount('');
-      setSelectedProject(null);
     }
   };
 
@@ -387,34 +393,26 @@ const GameLobby = () => {
               View All <ChevronRight className="w-5 h-5" />
             </button>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 lg:gap-10">
-            {loadingCrowdfunding ? (
-              <div className="col-span-full flex items-center justify-center py-20">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white/60 mx-auto mb-4"></div>
-                  <p className="text-white/60">{t('loading')}...</p>
-                </div>
+          {loadingCrowdfunding ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white/60 mx-auto mb-4"></div>
+                <p className="text-white/60">{t('loading')}...</p>
               </div>
-            ) : crowdfundingProjects.length === 0 ? (
-              <div className="col-span-full text-center py-20">
-                <p className="text-white/60 text-lg">{t('noCrowdfundingProjects') || 'No crowdfunding projects available'}</p>
-              </div>
-            ) : (
-              crowdfundingProjects.map(project => (
-              <div key={project.id} className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl overflow-hidden shadow-2xl hover:scale-105 transition-all duration-300 group">
-                <div className="h-48 relative overflow-hidden">
-                  <img 
-                    src={project.image} 
-                    alt={project.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 text-white">
-                    <h3 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2">{project.title}</h3>
-                    <p className="text-white/90 text-xs sm:text-sm">{project.description}</p>
-                  </div>
-                </div>
+            </div>
+          ) : crowdfundingProjects.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-white/60 text-lg">{t('noCrowdfundingProjects') || 'No crowdfunding projects available'}</p>
+            </div>
+          ) : (
+            <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
+              {crowdfundingProjects.map(project => (
+                <div key={project.id} className="flex-none w-80 bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl overflow-hidden shadow-2xl hover:scale-105 transition-all duration-300 group">
                 <div className="p-4 sm:p-6">
+                  <div className="mb-4">
+                    <h3 className="text-lg sm:text-xl font-bold mb-2 text-white">{project.title}</h3>
+                    <p className="text-white/80 text-xs sm:text-sm">{project.description}</p>
+                  </div>
                   <div className="mb-4">
                     <div className="flex justify-between text-white/80 text-sm mb-2">
                       <span>{t('progress')}</span>
@@ -447,9 +445,9 @@ const GameLobby = () => {
                   </button>
                 </div>
               </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Voting Section */}
@@ -510,8 +508,8 @@ const GameLobby = () => {
 
       {/* Funding Modal */}
       {showFundingModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-3xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">{t('fundingProject')}</h3>
             {selectedProject && (
               <>
@@ -556,8 +554,8 @@ const GameLobby = () => {
 
       {/* Voting Modal */}
       {showVotingModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-3xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">{t('votingFor')}</h3>
             {selectedProject && (
               <>
@@ -613,6 +611,36 @@ const GameLobby = () => {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-3xl p-6 sm:p-8 w-full max-w-sm sm:max-w-md shadow-2xl text-center">
+            <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg shadow-green-500/25">
+              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-bold text-white mb-4">{t('fundingCompleted')}</h3>
+            <p className="text-white/80 mb-6">{t('fundingSuccess')}</p>
+            {selectedProject && (
+              <div className="bg-white/10 rounded-2xl p-4 mb-6">
+                <p className="text-white/60 text-sm mb-1">{t('project')}</p>
+                <p className="text-white font-semibold">{selectedProject.title}</p>
+              </div>
+            )}
+            <button
+              onClick={() => {
+                setShowSuccessModal(false);
+                setSelectedProject(null);
+              }}
+              className="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all duration-200"
+            >
+              {t('thankYou')}
+            </button>
           </div>
         </div>
       )}

@@ -197,16 +197,16 @@ const Header = () => {
                   <>
                     <div className="relative group"> {/* ⬅️ 1. 이 컨테이너에 group 클래스 추가 */}
                       {/* 기본으로 보이는 IOU 잔액 (기존 초록색 스타일 적용) */}
-                      <div className="bg-green-100 rounded-2xl px-4 py-2 flex items-center gap-2 border border-green-200 shadow-sm cursor-pointer transition-all duration-200 group-hover:shadow-lg">
+                      <div className="bg-gradient-to-r from-gray-800/90 to-gray-900/90 backdrop-blur-sm rounded-2xl px-4 py-2 flex items-center gap-2 border border-white/10 shadow-lg cursor-pointer transition-all duration-200 group-hover:shadow-xl group-hover:scale-105">
                         {isBalanceLoading ? (
-                          <span className="text-sm font-medium text-green-800">{t('checkingBalance')}</span>
+                          <span className="text-sm font-medium text-gray-300">{t('checkingBalance')}</span>
                         ) : (
                           <div className="flex items-center gap-1.5">
-                            <DollarSign className="w-5 h-5 text-green-600" />
-                            <span className="text-lg font-bold text-green-900">
+                            <DollarSign className="w-4 h-4 text-emerald-400" />
+                            <span className="text-sm font-bold text-white">
                               {parseFloat(userBalance?.tokenBalance || 0).toLocaleString()}
                             </span>
-                            <span className="text-sm font-medium text-green-700">USD</span>
+                            <span className="text-sm font-medium text-emerald-400">LUSD</span>
                           </div>
                         )}
                       </div>
@@ -259,7 +259,7 @@ const Header = () => {
               <button
                 onClick={handleGemWalletConnect}
                 disabled={isGemWalletInstalled !== true}
-                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-2.5 rounded-2xl font-medium transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-105 flex items-center gap-2 backdrop-blur-sm"
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-2 rounded-2xl font-medium transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-105 flex items-center gap-2 backdrop-blur-sm"
               >
                 <Wallet className="w-4 h-4" />
                 {getWalletButtonText()}

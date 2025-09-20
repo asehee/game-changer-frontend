@@ -30,8 +30,8 @@ export const translations = {
     tempWalletBalanceError: '충전 잔액 조회 실패',
 
     // GameLobby Main
-    welcomeTitle: "GameChanger에 오신 것을 환영합니다",
-    welcomeDescription: "🎮 시간 당 과금으로 게임을 즐겨보세요.",
+    welcomeTitle: "시간을 선택하고, 혁신을 플레이하세요",
+    welcomeDescription: "🎮 시간 단위로 결제하고, 원하는 만큼 게임을 즐기는 새로운 경험",
     searchPlaceholder: "🔍 원하는 게임을 검색하세요...",
     featuredRecommended: "추천 & 인기",
     topRatedGames: "최고 평점 게임",
@@ -200,6 +200,9 @@ export const translations = {
     noFundings: "아직 펀딩한 게임이 없습니다.",
     fundingCanceled: "펀딩이 취소되었습니다.",
     cancelConfirm: "정말로 이 펀딩을 취소하시겠습니까?",
+    fundingCompleted: "펀딩이 완료되었습니다",
+    fundingSuccess: "성공적으로 펀딩에 참여하였습니다!",
+    thankYou: "감사합니다",
     
     // Admin Page
     adminDashboard: "관리자 대시보드",
@@ -240,7 +243,17 @@ export const translations = {
     cancel: "취소",
     hours: "시간",
     minutes: "분",
-    seconds: "초"
+    seconds: "초",
+
+    // Error messages
+    sessionError: "세션 오류가 발생했습니다",
+    connectionUnstable: "연결이 불안정합니다. 게임을 다시 시작해주세요.",
+    refresh: "새로고침",
+    
+    // Wallet & Balance
+    pleaseCharge: "상단 메뉴에서 충전하세요",
+    walletRequired: "임시 지갑 생성이 필요합니다",
+    walletRequiredDesc: "게임을 플레이하려면 상단 메뉴에서 임시 지갑을 생성해주세요."
   },
   
   en: {
@@ -275,8 +288,8 @@ export const translations = {
     tempWalletBalanceError: 'Failed to fetch charged balance',
 
     // GameLobby Main
-    welcomeTitle: "Welcome to GameChanger",
-    welcomeDescription: "🎮 Discover amazing blockchain games with our innovative pay-per-minute model",
+    welcomeTitle: "Play the Future, Pay by Time",
+    welcomeDescription: "🎮 Pay for the game per hour and experience innovation",
     searchPlaceholder: "🔍 Search for your next adventure...",
     featuredRecommended: "Featured & Recommended",
     topRatedGames: "Top Rated Games",
@@ -445,6 +458,9 @@ export const translations = {
     noFundings: "No games funded yet.",
     fundingCanceled: "Funding has been canceled.",
     cancelConfirm: "Are you sure you want to cancel this funding?",
+    fundingCompleted: "Funding Completed",
+    fundingSuccess: "You have successfully participated in the funding!",
+    thankYou: "Thank You",
 
     // Admin Page
     adminDashboard: "Admin Dashboard",
@@ -485,6 +501,16 @@ export const translations = {
     cancel: "Cancel",
     hours: "hours",
     minutes: "minutes",
-    seconds: "seconds"
+    seconds: "seconds",
+
+    // Error messages
+    sessionError: "Session error occurred",
+    connectionUnstable: "Connection is unstable. Please restart the game.",
+    refresh: "Refresh",
+    
+    // Wallet & Balance
+    pleaseCharge: "Please charge from the top menu",
+    walletRequired: "Temporary wallet required",
+    walletRequiredDesc: "Please create a temporary wallet from the top menu to play the game."
   }
 };

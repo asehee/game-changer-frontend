@@ -1,49 +1,61 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DollarSign, Vote, CheckCircle, XCircle, TrendingUp, Users, Calendar, Settings } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
+
+const API_URL = window.location.origin.includes('localhost') 
+  ? 'http://localhost:3000'
+  : 'http://localhost:3000';
 
 const AdminDashboard = () => {
   const { t } = useTranslation();
 
-  // Mock data for funding projects
-  const [fundingProjects, setFundingProjects] = useState([
-    {
-      id: 1,
-      name: "Virtual Reality RPG Adventure",
-      goal: 100000,
-      raised: 100000,
-      participants: 234,
-      startDate: "2024-01-01",
-      status: "goal_reached",
-      finished: false,
-      voteStatus: "passed",
-      voteApprovalRate: 85
-    },
-    {
-      id: 2,
-      name: "Blockchain Strategy Game",
-      goal: 50000,
-      raised: 32000,
-      participants: 156,
-      startDate: "2024-01-05",
-      status: "in_progress",
-      finished: false,
-      voteStatus: "in_progress",
-      voteApprovalRate: 62
-    },
-    {
-      id: 3,
-      name: "Space Exploration MMO",
-      goal: 75000,
-      raised: 80000,
-      participants: 312,
-      startDate: "2023-12-20",
-      status: "goal_reached",
-      finished: true,
-      voteStatus: "passed",
-      voteApprovalRate: 91
+  const [fundingProjects, setFundingProjects] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch crowdfunding projects from API
+  const fetchCrowdfundingProjects = async () => {
+    setLoading(true);
+    try {
+      console.log('[AdminDashboard] Fetching crowdfunding projects...');
+      const response = await fetch(`${API_URL}/api/crowd-funding`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('[AdminDashboard] Crowdfunding API response:', data);
+      
+      // API 데이터를 관리자 페이지 UI에 맞게 변환
+      const transformedData = data.map(project => ({
+        id: project.id,
+        name: project.gameName,
+        goal: parseFloat(project.goalAmount),
+        raised: parseFloat(project.currentAmount),
+        participants: project.participantCount || 0,
+        startDate: project.createdAt ? project.createdAt.split('T')[0] : new Date().toISOString().split('T')[0],
+        status: parseFloat(project.currentAmount) >= parseFloat(project.goalAmount) ? "goal_reached" : "in_progress",
+        finished: project.fundingStatus === 'completed' || false,
+        voteStatus: project.voteStatus || "in_progress",
+        voteApprovalRate: project.approvalRate || 0,
+        endDate: project.endDate,
+        fundingProgress: project.fundingProgress
+      }));
+      
+      setFundingProjects(transformedData);
+    } catch (error) {
+      console.error('[AdminDashboard] Failed to fetch crowdfunding projects:', error);
+      // 오류 시 빈 배열로 설정
+      setFundingProjects([]);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
+
+  // Load crowdfunding projects on component mount
+  useEffect(() => {
+    fetchCrowdfundingProjects();
+  }, []);
 
 
   const handleFinishFunding = (projectId, projectName) => {
@@ -56,6 +68,19 @@ const AdminDashboard = () => {
         )
       );
       alert(t('projectFinished'));
+    }
+  };
+
+  const handleCancelFunding = (projectId, projectName) => {
+    if (window.confirm(`정말로 "${projectName}" 프로젝트를 취소하시겠습니까?`)) {
+      setFundingProjects(prev =>
+        prev.map(project =>
+          project.id === projectId
+            ? { ...project, status: "cancelled", finished: true }
+            : project
+        )
+      );
+      alert('프로젝트가 취소되었습니다.');
     }
   };
 
@@ -87,7 +112,19 @@ const AdminDashboard = () => {
             <h2 className="text-2xl font-bold text-white">{t('fundingManagement')}</h2>
           </div>
 
-          <div className="overflow-x-auto">
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white/60 mx-auto mb-4"></div>
+                <p className="text-white/60">{t('loading')}...</p>
+              </div>
+            </div>
+          ) : fundingProjects.length === 0 ? (
+            <div className="text-center py-20 bg-white/10 backdrop-blur-xl rounded-3xl">
+              <p className="text-white/60 text-lg">No crowdfunding projects available</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
             <table className="w-full backdrop-blur-xl bg-white/10 rounded-3xl overflow-hidden">
               <thead className="bg-white/10 border-b border-white/20">
                 <tr>
@@ -163,21 +200,35 @@ const AdminDashboard = () => {
                     </td>
                     <td className="px-6 py-4 text-center">
                       {project.finished ? (
-                        <span className="text-gray-400 text-sm">Finished</span>
-                      ) : project.raised >= project.goal && project.voteStatus === 'passed' ? (
-                        <button
-                          onClick={() => handleFinishFunding(project.id, project.name)}
-                          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-medium transition-colors"
-                        >
-                          Finish
-                        </button>
+                        <span className={`text-sm font-medium ${
+                          project.status === 'cancelled' ? 'text-red-400' : 'text-gray-400'
+                        }`}>
+                          {project.status === 'cancelled' ? 'Cancelled' : 'Finished'}
+                        </span>
                       ) : (
-                        <button
-                          disabled
-                          className="bg-gray-600/50 text-gray-400 px-4 py-2 rounded-xl font-medium cursor-not-allowed"
-                        >
-                          Finish
-                        </button>
+                        <div className="flex gap-2 justify-center">
+                          {project.raised >= project.goal && project.voteStatus === 'passed' ? (
+                            <button
+                              onClick={() => handleFinishFunding(project.id, project.name)}
+                              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-medium transition-colors"
+                            >
+                              Finish
+                            </button>
+                          ) : (
+                            <button
+                              disabled
+                              className="bg-gray-600/50 text-gray-400 px-4 py-2 rounded-xl font-medium cursor-not-allowed"
+                            >
+                              Finish
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleCancelFunding(project.id, project.name)}
+                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-medium transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -186,6 +237,7 @@ const AdminDashboard = () => {
               </tbody>
             </table>
           </div>
+          )}
         </section>
 
       </div>

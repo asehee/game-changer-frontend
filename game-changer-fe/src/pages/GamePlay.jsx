@@ -78,9 +78,9 @@ const GamePlay = () => {
       // 기본값도 실제 게임으로 연결
       'default': {
         id: gameId,
-        title: 'Game Demo',
+        title: 'Puzzle 2048',
         description: '🎮 Interactive space battle game - Use arrow keys to move and space to shoot!',
-        price: 0.001,
+        price: 2,
         gameUrl: 'http://localhost:3000/games/2048-master/index.html',
         isExternal: true
       }
@@ -228,17 +228,17 @@ const GamePlay = () => {
   const renderGameContent = useCallback(() => {
     if (sessionError) {
       return (
-        <div className="text-center">
+        <div className="flex flex-col items-center justify-center text-center">
           <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-red-500 to-pink-600 rounded-3xl flex items-center justify-center shadow-lg">
             <AlertCircle className="w-16 h-16 text-white" />
           </div>
-          <p className="text-red-600 text-lg mb-2">세션 오류가 발생했습니다</p>
+          <p className="text-red-600 text-lg mb-2">{t('sessionError')}</p>
           <p className="text-white/40 mb-4">{sessionError}</p>
           <button
             onClick={() => window.location.reload()}
             className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-2xl"
           >
-            새로고침
+            {t('refresh')}
           </button>
         </div>
       );
@@ -247,14 +247,16 @@ const GamePlay = () => {
     if (!isPlaying) {
       return (
         <div className="text-center">
-          <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-lg">
+          {/* <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-lg">
             <Play className="w-16 h-16 text-white" />
           </div>
-          <p className="text-white/60 text-lg mb-2">Ready to play {gameData?.title}?</p>
-          <p className="text-white/40">Click "Start Game" to begin your adventure</p>
-          {sessionLoading && (
-            <p className="text-blue-400 mt-4">게임 세션을 준비중입니다...</p>
-          )}
+          <div className="mb-8">
+            <p className="text-white/60 text-lg mb-2">Ready to play {gameData?.title}?</p>
+            <p className="text-white/40">Click "Start Game" to begin your adventure</p>
+            {sessionLoading && (
+              <p className="text-blue-400 mt-4">게임 세션을 준비중입니다...</p>
+            )}
+          </div> */}
         </div>
       );
     }
@@ -288,7 +290,7 @@ const GamePlay = () => {
           style={{ maxWidth: '100%', maxHeight: '100%' }}
         />
         <div className="absolute bottom-4 left-4 text-white text-sm bg-black/50 px-3 py-1 rounded-lg backdrop-blur-sm">
-          Demo Game Running - Use arrow keys to move
+          Puzzle 2048 Running - Use arrow keys to move
         </div>
       </div>
     );
@@ -444,7 +446,7 @@ const GamePlay = () => {
           )}
         </div>
 
-        <div className="backdrop-blur-xl bg-white/10 rounded-3xl relative overflow-hidden shadow-lg border border-white/20" style={{height: '70vh', minHeight: '600px'}}>
+        <div className="backdrop-blur-xl bg-white/10 rounded-3xl relative overflow-hidden shadow-lg border border-white/20 flex items-center justify-center" style={{height: '70vh', minHeight: '600px'}}>
           {renderGameContent()}
 
           <div className="absolute bottom-4 right-4 flex gap-2">
