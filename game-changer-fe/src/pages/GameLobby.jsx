@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { Search, TrendingUp, Award, Sparkles, Filter, ChevronRight, DollarSign, Clock, Vote, ThumbsUp, ThumbsDown, Users } from 'lucide-react';
 import GameCard from '../components/GameCard';
 import { useTranslation } from '../hooks/useTranslation';
+import { useUser } from '../contexts/UserContext';
 import axios from 'axios';
+import CrowdFundingApiService from '../services/crowdFundingApi';
 
 const API_URL = window.location.origin.includes('localhost') 
   ? 'http://localhost:3000'
@@ -232,14 +234,46 @@ const GameLobby = () => {
     setShowVotingModal(true);
   };
 
-  const handleFundingSubmit = () => {
-    if (fundingAmount && selectedProject) {
-      // 펀딩 모달 닫기
-      setShowFundingModal(false);
-      // 성공 모달 표시
-      setShowSuccessModal(true);
-      // 상태 초기화
-      setFundingAmount('');
+  const { user } = useUser();
+
+  const handleFundingSubmit = async () => {
+    if (!fundingAmount || !selectedProject) {
+      alert('펀딩 금액을 입력해주세요');
+      return;
+    }
+
+    if (!user?.id) {
+      alert('로그인이 필요합니다');
+      return;
+    }
+
+    const numAmount = parseFloat(fundingAmount);
+    if (numAmount <= 0) {
+      alert('유효한 금액을 입력해주세요');
+      return;
+    }
+
+    try {
+      const result = await CrowdFundingApiService.processEscrowTransaction({
+        userId: user.id,
+        crowdId: selectedProject.id,
+        amount: fundingAmount
+      });
+
+      if (result.status === 'success') {
+        // 펀딩 모달 닫기
+        setShowFundingModal(false);
+        // 성공 모달 표시
+        setShowSuccessModal(true);
+        // 상태 초기화
+        setFundingAmount('');
+        
+        // 크라우드펀딩 목록 새로고침
+        fetchCrowdfundingProjects();
+      }
+    } catch (error) {
+      console.error('펀딩 실패:', error);
+      alert(error.message || '펀딩 처리 중 오류가 발생했습니다');
     }
   };
 
