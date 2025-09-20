@@ -43,7 +43,7 @@ const EarnFees = () => {
       
       setStatus('success');
       alert(t('rewardSent'));
-      await getTempBalance(walletAddress);
+      await getTempBalance(user.wallet);
 
     } catch (error) {
       setErrorMessage(error.message);
