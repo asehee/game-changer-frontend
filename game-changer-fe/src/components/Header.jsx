@@ -119,7 +119,7 @@ const Header = () => {
       const networkResponse = await getNetwork();
       const currentNetwork = networkResponse.result?.network;
 
-      if (currentNetwork?.toUpperCase() !== 'TESTNET') {
+      if (currentNetwork?.toUpperCase() !== 'DEVNET') {
         alert(t('wrongNetwork'));
         return;
       }

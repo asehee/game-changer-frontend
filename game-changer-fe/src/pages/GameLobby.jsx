@@ -13,6 +13,7 @@ const API_URL = window.location.origin.includes('localhost')
 const GameLobby = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const { user, walletAddress, getTempBalance } = useUser();
   const [games, setGames] = useState({
     recommended: [],
     top: [],
@@ -234,8 +235,6 @@ const GameLobby = () => {
     setShowVotingModal(true);
   };
 
-  const { user } = useUser();
-
   const handleFundingSubmit = async () => {
     if (!fundingAmount || !selectedProject) {
       alert('펀딩 금액을 입력해주세요');
@@ -270,6 +269,7 @@ const GameLobby = () => {
         
         // 크라우드펀딩 목록 새로고침
         fetchCrowdfundingProjects();
+        getTempBalance(walletAddress);
       }
     } catch (error) {
       console.error('펀딩 실패:', error);
