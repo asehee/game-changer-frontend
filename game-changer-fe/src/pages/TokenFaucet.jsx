@@ -70,7 +70,7 @@ const TokenFaucet = () => {
       }
 
       setFaucetClaimed(true);
-      await getTempBalance(walletAddress); // Context의 잔액 갱신 함수 호출
+      //await getTempBalance(walletAddress); // Context의 잔액 갱신 함수 호출
     } catch (error) {
       setErrorMessage(error.message);
     } finally {
