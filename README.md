@@ -1,4 +1,4 @@
-# GameChanger Platform - Backend API
+# GameChanger Platform - Frontend
 
 ## 🎮 Project Overview
 **GameChanger**는 Web3의 복잡한 사용자 경험과, 크라우드펀딩에서 **개발자가 자금을 수령한 뒤 프로젝트를 중단하는 신뢰성 문제**를 동시에 해결하는 **XRPL 기반 게이밍 & 펀딩 플랫폼**입니다.  
