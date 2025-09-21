@@ -42,18 +42,24 @@
 
 ---
 
-## Technology Stack
+## Technology 
+<img width="1365" height="768" alt="image" src="https://github.com/user-attachments/assets/0a10e4fc-1414-4b51-9d93-123eb350e296" />
 
-### Blockchain & Payment
-- **XRPL (XRP Ledger)** – Blockchain infrastructure  
-- **xrpl.js** – XRP Ledger JavaScript library  
+### 충전 지갑(charged wallet) 모델
+- 사용자는 익스텐션 지갑을 사용하여 단 2번의 서명 (충전 지갑 활성화를 위한 xrp지불, 토큰 충전을 위한 지불)
+- 충전지갑은 프론트엔드에서 생성되어, 충전지갑의 시드는 token trust set, signer list set서명에 사용되며, 절대 서버에 전달되지 않음
+- signer list set 트랜잭션으로 사용자 지갑, 서버 지갑에게 권한 위임
 
-### Backend Features
-- **세션 기반 JWT 인증** – 5분 롤링 토큰 방식  
-- **하트비트 메커니즘** – 세션 지속성 모니터링 (30초 간격)  
-- **Range 스트리밍** – 세션 검증과 함께 게임 에셋 스트리밍  
-- **빌링 연동** – XRPL 기반 실시간 결제 시스템  
+### 시간당 과금
+- 서명 권한 위임 (SignerListSet): 충전 지갑의 서명 권한을 사용자와 서버에게 공동으로 위임하여, 개인키 노출 없이 안전한 자동 결제 가능.
+- 세션 토큰 기반 하트비트 결제: 유효한 세션 토큰으로 인증된 프론트엔드의 주기적인 하트비트 신호에 따라, 충전지갑의 남은 잔액을 확인하고, 서버가 위임받은 권한으로 플레이 요금을 자동으로 네트워크에 제출.
 
+### 조건부 토큰 에스크로와 batch를 사용한 크라우드 펀딩
+- 후원금은 개발자에게 직접 전달되지 않고, XRPL 에스크로에 투명하게 보관
+- 에스크로 Condition, Fulfillment 관리는 서버가 담당
+- 중간 결과물을 보고 후원자들이 오프체인 투표를 실행
+- 투표 결과에 따라 서버가 후원자들(충전지갑)에게 위임 받은 권한으로 finish or cancel
+- escrow의 finish / cancel 는 batch transaction을 활용하여 일괄 처리
 ---
 
 ## Team & Contributors
